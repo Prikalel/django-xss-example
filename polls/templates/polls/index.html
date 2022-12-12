@@ -1,13 +1,6 @@
-{% if latest_question_list %}
-    <ul>
-    {% for question in latest_question_list %}
-        <li>{{ question }}</li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No polls are available.</p>
-{% endif %}
-
+{% with message1="<script>alert('XSS');</script>" %}
 <div style="display:none;">
     {% debug %}
 </div>
+Visible page.
+{% endwith %}
