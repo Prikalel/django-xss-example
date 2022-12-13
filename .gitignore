@@ -141,6 +141,8 @@ grammars/.antlr
 grammars/examples
 grammars/fuzzer/__pycache__
 grammars/fuzzer/HTMLGenerator.py
+polls/templates/polls/test*.html
+polls/templates/polls/rendered_test*.html
 
 # chrome
 chromedriver

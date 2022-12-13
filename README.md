@@ -1,6 +1,8 @@
 # Run tests on django
 
-
+```
+python runfuzz.py
+```
 
 ### To run django server:
 
@@ -13,11 +15,12 @@ python manage.py runserver
 ```
 python3 -m django --version
 grammarinator-generate --version
+pip install selenium # should be installed
+pip install webdriver-manager # also
+pip install progress
 ```
 
 ### Prepare fuzzer and check that all is ok
-
-Extract `chromedriver_linux64.zip`.
 
 In grammars folder:
 
