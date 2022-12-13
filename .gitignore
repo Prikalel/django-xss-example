@@ -141,3 +141,6 @@ grammars/.antlr
 grammars/examples
 grammars/fuzzer/__pycache__
 grammars/fuzzer/HTMLGenerator.py
+
+# chrome
+chromedriver
