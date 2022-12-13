@@ -9,27 +9,6 @@ options { tokenVocab=HTMLLexer;
 
 @header {
 from copy import deepcopy
-
-
-def html_space_serializer(root):
-
-    def _walk(node):
-        nonlocal src
-        for child in node.children:
-            _walk(child)
-
-        if isinstance(node, UnlexerRule) and node.src:
-            src += node.src
-
-        if (isinstance(node, UnparserRule) and
-            node.name == 'htmlTagName' and node.right_sibling and node.right_sibling.name == 'htmlAttribute' or node.name == 'htmlAttribute') \
-                or isinstance(node, UnlexerRule) and node.src and node.src.endswith(('<script', '<style', '<?xml')):
-            src += ' '
-
-    src = ''
-    _walk(root)
-    return src
-
 }
 
 @parser::member {
@@ -39,7 +18,7 @@ def _endOfHtmlElement(self):
 }
 
 htmlDocument
-    : (scriptlet | SEA_WS)* xml? (scriptlet | SEA_WS)* dtd? (scriptlet | SEA_WS)* htmlElements*
+    : SEA_WS* htmlElements*
     ;
 
 htmlElements
@@ -50,13 +29,12 @@ htmlElement
     : TAG_OPEN open_tag=htmlTagName htmlAttribute* TAG_CLOSE htmlContent TAG_OPEN TAG_SLASH htmlTagName {current.last_child = deepcopy($open_tag)} TAG_CLOSE {self._endOfHtmlElement()}
     | TAG_OPEN open_tag=htmlTagName htmlAttribute* TAG_SLASH_CLOSE {self._endOfHtmlElement()}
     | TAG_OPEN open_tag=htmlTagName htmlAttribute* TAG_CLOSE {self._endOfHtmlElement()}
-    | scriptlet
     | script
     | style
     ;
 
 htmlContent
-    : htmlChardata? ((htmlElement | xhtmlCDATA | htmlComment) htmlChardata?)*
+    : htmlChardata? (htmlElement htmlChardata?)*
     ;
 
 htmlAttribute
@@ -82,29 +60,7 @@ htmlChardata
     ;
 
 htmlMisc
-    : htmlComment
-    | SEA_WS
-    ;
-
-htmlComment
-    : HTML_COMMENT
-    | HTML_CONDITIONAL_COMMENT
-    ;
-
-xhtmlCDATA
-    : CDATA
-    ;
-
-dtd
-    : DTD
-    ;
-
-xml
-    : XML_DECLARATION
-    ;
-
-scriptlet
-    : SCRIPTLET
+    : SEA_WS
     ;
 
 script

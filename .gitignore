@@ -136,5 +136,8 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 
-# antlr grammar parser
+# antlr grammar parser & fuzzer generated files
 grammars/.antlr
+grammars/examples
+grammars/fuzzer/__pycache__
+grammars/fuzzer/HTMLGenerator.py
