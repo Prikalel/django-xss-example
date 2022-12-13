@@ -8,6 +8,30 @@ DJ_CLOSE
     : ' %}'
     ;
 
+DJ_DEBUG
+    : DJ_OPEN 'debug' DJ_CLOSE
+    ;
+
+DJ_START_WITH
+    : DJ_OPEN 'with ' DJ_WITH_RULES+ DJ_CLOSE
+    ;
+
+DJ_WITH_RULES
+    : DJ_VARIABLE '=' DJ_VALUE ' '
+    ;
+
+DJ_VARIABLE
+    : 'var1' | 'var2' | 'var3'
+    ;
+
+DJ_VALUE
+    : '123' | '"<script>alert(\'XSS\');</script>"'
+    ;
+
+DJ_END_WITH
+    : DJ_OPEN 'endwith' DJ_CLOSE
+    ;
+
 DJ_START_BLOCK
     : DJ_OPEN 'block ' DJ_BLOCK_NAME_SYMBOLS+ DJ_CLOSE
     ;

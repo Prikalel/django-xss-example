@@ -32,6 +32,16 @@ htmlElement
 
 django
     : djangoBlock
+    | djangoWith
+    | djangoDebug
+    ;
+
+djangoDebug
+    : DJ_DEBUG
+    ;
+
+djangoWith
+    : DJ_START_WITH htmlContent DJ_END_WITH
     ;
 
 djangoBlock
