@@ -27,7 +27,15 @@ htmlElements
 
 htmlElement
     : TAG_OPEN open_tag=htmlTagName TAG_WHITESPACE htmlAttribute? TAG_CLOSE htmlContent TAG_OPEN TAG_SLASH htmlTagName {current.last_child = deepcopy($open_tag)} TAG_CLOSE {self._endOfHtmlElement()}
-    | script
+    | django
+    ;
+
+django
+    : djangoBlock
+    ;
+
+djangoBlock
+    : DJ_START_BLOCK htmlContent DJ_END_BLOCK
     ;
 
 htmlContent
@@ -56,8 +64,4 @@ htmlChardata
 
 htmlMisc
     : NEWLINE
-    ;
-
-script
-    : SCRIPT_OPEN SCRIPT_BODY
     ;

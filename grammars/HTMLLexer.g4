@@ -1,11 +1,28 @@
 lexer grammar HTMLLexer;
 
-NEWLINE
-    : '\n'
+DJ_OPEN
+    : '{% '
     ;
 
-SCRIPT_OPEN
-    : '<script>' ->pushMode(SCRIPT)
+DJ_CLOSE
+    : ' %}'
+    ;
+
+DJ_START_BLOCK
+    : DJ_OPEN 'block ' DJ_BLOCK_NAME_SYMBOLS+ DJ_CLOSE
+    ;
+
+DJ_END_BLOCK
+    : DJ_OPEN 'endblock' DJ_CLOSE
+    ;
+
+fragment
+DJ_BLOCK_NAME_SYMBOLS
+    : [a-fA-F]
+    ;
+
+NEWLINE
+    : '\n'
     ;
 
 TAG_OPEN
@@ -73,15 +90,6 @@ TAG_NameStartChar
     ;
 
 //
-// <scripts>
-//
-mode SCRIPT;
-
-SCRIPT_BODY
-    : 'some_text</script>' -> popMode
-    ;
-
-//
 // attribute values
 //
 mode ATTVALUE;
@@ -92,10 +100,7 @@ ATTVALUE_VALUE
     ;
 
 ATTRIBUTE
-    : DOUBLE_QUOTE_STRING
-    | ATTCHARS
-    | HEXCHARS
-    | DECCHARS
+    : ATTCHARS
     ;
 
 fragment ATTCHAR
@@ -115,16 +120,4 @@ fragment ATTCHAR
 
 fragment ATTCHARS
     : ATTCHAR+ ' '?
-    ;
-
-fragment HEXCHARS
-    : '#' [0-9a-fA-F]+
-    ;
-
-fragment DECCHARS
-    : [0-9]+
-    ;
-
-fragment DOUBLE_QUOTE_STRING
-    : '"' ~[<"]* '"'
     ;
