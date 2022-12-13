@@ -31,7 +31,7 @@ htmlElement
     ;
 
 django
-    : djangoBlock
+    : djangoSpaceless
     | djangoWith
     | djangoDebug
     ;
@@ -44,8 +44,8 @@ djangoWith
     : DJ_START_WITH htmlContent DJ_END_WITH
     ;
 
-djangoBlock
-    : DJ_START_BLOCK htmlContent DJ_END_BLOCK
+djangoSpaceless
+    : DJ_START_SPACELESS htmlContent DJ_END_SPACELESS
     ;
 
 htmlContent

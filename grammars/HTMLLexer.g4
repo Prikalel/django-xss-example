@@ -32,17 +32,12 @@ DJ_END_WITH
     : DJ_OPEN 'endwith' DJ_CLOSE
     ;
 
-DJ_START_BLOCK
-    : DJ_OPEN 'block ' DJ_BLOCK_NAME_SYMBOLS+ DJ_CLOSE
+DJ_START_SPACELESS
+    : DJ_OPEN 'spaceless' DJ_CLOSE
     ;
 
-DJ_END_BLOCK
-    : DJ_OPEN 'endblock' DJ_CLOSE
-    ;
-
-fragment
-DJ_BLOCK_NAME_SYMBOLS
-    : [a-fA-F]
+DJ_END_SPACELESS
+    : DJ_OPEN 'endspaceless' DJ_CLOSE
     ;
 
 NEWLINE

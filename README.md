@@ -1,4 +1,4 @@
-# Run server:
+# Run django server:
 
 ```
 python manage.py runserver
@@ -11,7 +11,7 @@ python3 -m django --version
 grammarinator-generate --version
 ```
 
-## Reproduce
+## Reproduce tests
 
 in grammars folder:
 ```

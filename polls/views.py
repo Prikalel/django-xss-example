@@ -5,4 +5,4 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 def index(request):
-    return render(request, 'polls/index.html', context=dict())
+    return render(request, 'polls/test_0.html', context=dict())
