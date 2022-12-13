@@ -25,7 +25,6 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     attr_stack = []
     tag_stack = []
-    tags = set()
 
     # Customize the function generated from the htmlTagName parser rule to produce valid tag names.
     def htmlTagName(self, parent=None):
@@ -33,7 +32,6 @@ class HTMLCustomGenerator(HTMLGenerator):
         name = random.choice(tags[self.tag_stack[-1]]['children'] or tag_names if self.tag_stack else tag_names)
         self.tag_stack.append(name)
         UnlexerRule(src=name, parent=current)
-        self.tag_stack.append(name)
         return current
 
     # Customize the function generated from the htmlAttributeName parser rule to produce valid attribute names.
@@ -53,7 +51,3 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     def _endOfHtmlElement(self):
         self.tag_stack.pop()
-
-    # You probably want to rewrite this with a distinct CSS fuzzer.
-    def style_sheet(self, parent=None):
-        return UnlexerRule(src='* { background: green; }', parent=parent)

@@ -1,21 +1,11 @@
 lexer grammar HTMLLexer;
 
-@lexer::member {
-def style_sheet(self, parent=None):
-    return UnlexerRule(src='', parent=parent)
-
-}
-
-SEA_WS
-    :  (' '|'\t'? '\n')+
+NEWLINE
+    : '\n'
     ;
 
 SCRIPT_OPEN
-    : '<script' .*? '>' ->pushMode(SCRIPT)
-    ;
-
-STYLE_OPEN
-    : '<style' .*? '>'  ->pushMode(STYLE)
+    : '<script>' ->pushMode(SCRIPT)
     ;
 
 TAG_OPEN
@@ -23,7 +13,7 @@ TAG_OPEN
     ;
 
 HTML_TEXT
-    : ~'<'+
+    : TAG_NameStartChar+
     ;
 
 //
@@ -55,7 +45,7 @@ TAG_NAME
     ;
 
 TAG_WHITESPACE
-    : [ \t\n] -> skip
+    : [ ] -> skip
     ;
 
 fragment
@@ -79,7 +69,7 @@ TAG_NameChar
 
 fragment
 TAG_NameStartChar
-    :   [:a-zA-Z]
+    :   [a-zA-Z]
     ;
 
 //
@@ -88,24 +78,7 @@ TAG_NameStartChar
 mode SCRIPT;
 
 SCRIPT_BODY
-    : .*? '</script>' -> popMode
-    ;
-
-SCRIPT_SHORT_BODY
-    : .*? '</>' -> popMode
-    ;
-
-//
-// <styles>
-//
-mode STYLE;
-
-STYLE_BODY
-    : {current += self.style_sheet()} '</style>' -> popMode
-    ;
-
-STYLE_SHORT_BODY
-    : {current += self.style_sheet()} '</>' -> popMode
+    : 'some_text</script>' -> popMode
     ;
 
 //
@@ -115,12 +88,11 @@ mode ATTVALUE;
 
 // an attribute value may have spaces b/t the '=' and the value
 ATTVALUE_VALUE
-    : [ ]* ATTRIBUTE -> popMode
+    : ATTRIBUTE -> popMode
     ;
 
 ATTRIBUTE
     : DOUBLE_QUOTE_STRING
-    | SINGLE_QUOTE_STRING
     | ATTCHARS
     | HEXCHARS
     | DECCHARS
@@ -150,14 +122,9 @@ fragment HEXCHARS
     ;
 
 fragment DECCHARS
-    : [0-9]+ '%'?
+    : [0-9]+
     ;
 
 fragment DOUBLE_QUOTE_STRING
     : '"' ~[<"]* '"'
     ;
-
-fragment SINGLE_QUOTE_STRING
-    : '\'' ~[<']* '\''
-    ;
-

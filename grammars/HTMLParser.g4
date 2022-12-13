@@ -18,19 +18,16 @@ def _endOfHtmlElement(self):
 }
 
 htmlDocument
-    : SEA_WS* htmlElements*
+    : htmlElements+
     ;
 
 htmlElements
-    : htmlMisc* htmlElement htmlMisc*
+    : htmlElement htmlMisc
     ;
 
 htmlElement
-    : TAG_OPEN open_tag=htmlTagName htmlAttribute* TAG_CLOSE htmlContent TAG_OPEN TAG_SLASH htmlTagName {current.last_child = deepcopy($open_tag)} TAG_CLOSE {self._endOfHtmlElement()}
-    | TAG_OPEN open_tag=htmlTagName htmlAttribute* TAG_SLASH_CLOSE {self._endOfHtmlElement()}
-    | TAG_OPEN open_tag=htmlTagName htmlAttribute* TAG_CLOSE {self._endOfHtmlElement()}
+    : TAG_OPEN open_tag=htmlTagName TAG_WHITESPACE htmlAttribute? TAG_CLOSE htmlContent TAG_OPEN TAG_SLASH htmlTagName {current.last_child = deepcopy($open_tag)} TAG_CLOSE {self._endOfHtmlElement()}
     | script
-    | style
     ;
 
 htmlContent
@@ -39,7 +36,6 @@ htmlContent
 
 htmlAttribute
     : attr_name=htmlAttributeName TAG_EQUALS htmlAttributeValue
-    | attr_name=htmlAttributeName
     ;
 
 htmlAttributeName
@@ -55,18 +51,13 @@ htmlTagName
     ;
 
 htmlChardata
-    : HTML_TEXT
-    | SEA_WS
+    : HTML_TEXT NEWLINE
     ;
 
 htmlMisc
-    : SEA_WS
+    : NEWLINE
     ;
 
 script
-    : SCRIPT_OPEN ( SCRIPT_BODY | SCRIPT_SHORT_BODY)
-    ;
-
-style
-    : STYLE_OPEN ( STYLE_BODY | STYLE_SHORT_BODY)
+    : SCRIPT_OPEN SCRIPT_BODY
     ;
