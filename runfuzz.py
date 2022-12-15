@@ -22,10 +22,8 @@ def django_setup():
     django.setup()
 
 
-def generate_tests(num: int, g: Generator) -> bool:  # true if all is good
-    #bashCommand = f"grammarinator-generate HTMLCustomGenerator.HTMLCustomGenerator -r htmlDocument -d 60 -o ./polls/templates/polls/test_%d.html -n {num} --sys-path ./grammars/fuzzer/"
-    #process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-    jobs = 12 # Number of threads to use.
+def generate_tests(num: int, g: Generator):
+    jobs = os.cpu_count() # Number of threads to use.
     generator = g
     if jobs > 1:
         with Pool(jobs) as pool:
@@ -49,10 +47,10 @@ def check_test(num: int, d: Driver) -> bool:  # true if found
             with open(output_rendered_name, "w") as text_file:
                 text_file.write(t.render(dict()))
             if d.is_alert_present(output_rendered_name):
+                bar.finish()
+                found = True
                 print(output_rendered_name)
                 print("Found!!!")
-                found = True
-                bar.finish()
                 continue
             bar.next()
         if os.path.exists(output_rendered_name):
@@ -67,16 +65,14 @@ def check_test(num: int, d: Driver) -> bool:  # true if found
 def run():
     d = Driver()
     g = Generator(generator='grammars.fuzzer.HTMLCustomGenerator.HTMLCustomGenerator', rule='htmlDocument', out_format='/home/alex/Документы/django-example/polls/templates/polls/test_%d.html',
-                   model='grammarinator.runtime.DefaultModel', max_depth=60, cleanup=False).__enter__()
+                  model='grammarinator.runtime.DefaultModel', max_depth=60, cleanup=False)
     django_setup()
     num_of_tests = 100
     found: bool = False
 
     while not found:
         print("Creating new pool...")
-        if not generate_tests(num_of_tests, g):
-            print("Error running grammarinator")
-            return
+        generate_tests(num_of_tests, g)
         found = check_test(num_of_tests, d)
         if not found:
             print(f"Not found. Have run {num_of_tests} tests...")
