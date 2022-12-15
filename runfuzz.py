@@ -9,6 +9,8 @@ from django.template import Template, Context, loader
 from django.template.loader import get_template
 from selen import Driver
 from progress.bar import IncrementalBar
+from grammarinator.generate import *
+from multiprocessing import Pool
 
 def django_setup():
     settings.configure(TEMPLATES=[
@@ -19,12 +21,26 @@ def django_setup():
     ])
     django.setup()
 
-def generate_tests(num: int) -> bool: # true if all is good
-    bashCommand = f"grammarinator-generate HTMLCustomGenerator.HTMLCustomGenerator -r htmlDocument -d 60 -o ./polls/templates/polls/test_%d.html -n {num} --sys-path ./grammars/fuzzer/"
-    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-    return process.wait() == 0
 
-def check_test(num: int, d: Driver) -> bool: # true if found
+def generate_tests(num: int) -> bool:  # true if all is good
+    #bashCommand = f"grammarinator-generate HTMLCustomGenerator.HTMLCustomGenerator -r htmlDocument -d 60 -o ./polls/templates/polls/test_%d.html -n {num} --sys-path ./grammars/fuzzer/"
+    #process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    jobs = 12 # Number of threads to use.
+    with Generator(generator='grammars.fuzzer.HTMLCustomGenerator.HTMLCustomGenerator', rule='htmlDocument', out_format='/home/alex/Документы/django-example/polls/templates/polls/test_%d.html',
+                   model='grammarinator.runtime.DefaultModel', max_depth=60, cleanup=False) as generator:
+        if jobs > 1:
+            with Pool(jobs) as pool:
+                for _ in pool.imap_unordered(generator, range(num)):
+                    pass
+                pool.close()
+                pool.join()
+        else:
+            for i in range(num):
+                generator(i)
+    return True
+
+
+def check_test(num: int, d: Driver) -> bool:  # true if found
     found: bool = False
     bar = IncrementalBar('Countdown', max=num)
     for i in range(num):
@@ -47,6 +63,7 @@ def check_test(num: int, d: Driver) -> bool: # true if found
     if not found:
         bar.finish()
     return found
+
 
 def run():
     d = Driver()

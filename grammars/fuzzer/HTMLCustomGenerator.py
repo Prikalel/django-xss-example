@@ -12,7 +12,7 @@ from os.path import dirname, join
 
 from grammarinator.runtime import *
 
-from HTMLGenerator import HTMLGenerator
+from grammars.fuzzer.HTMLGenerator import HTMLGenerator
 
 
 with open(join(dirname(__file__), 'html.json')) as f:
