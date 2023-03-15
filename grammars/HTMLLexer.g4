@@ -40,6 +40,14 @@ DJ_END_SPACELESS
     : DJ_OPEN 'endspaceless' DJ_CLOSE
     ;
 
+DJ_TEMPLATE_TAG
+    : DJ_OPEN 'templatetag ' DJ_TEMPLATE_TAG_OPTION DJ_CLOSE
+    ;
+
+DJ_TEMPLATE_TAG_OPTION
+    : 'openblock' | 'closeblock' | 'openvariable' | 'closevariable' | 'openbrace' | 'closebrace' | 'opencomment' | 'closecomment'
+    ;
+
 NEWLINE
     : '\n'
     ;

@@ -4,8 +4,7 @@
 
 parser grammar HTMLParser;
 
-options { tokenVocab=HTMLLexer;
-          dot=any_unicode_char;}
+options { tokenVocab=HTMLLexer;}
 
 @header {
 from copy import deepcopy
@@ -34,6 +33,7 @@ django
     : djangoSpaceless
     | djangoWith
     | djangoDebug
+    | djangoTemplateTag
     ;
 
 djangoDebug
@@ -46,6 +46,10 @@ djangoWith
 
 djangoSpaceless
     : DJ_START_SPACELESS htmlContent DJ_END_SPACELESS
+    ;
+
+djangoTemplateTag
+    : DJ_TEMPLATE_TAG
     ;
 
 htmlContent
