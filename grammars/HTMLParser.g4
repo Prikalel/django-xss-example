@@ -35,7 +35,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
-    | {not self.last_was_django_comment}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
+    | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;
 
 djangoDebug
