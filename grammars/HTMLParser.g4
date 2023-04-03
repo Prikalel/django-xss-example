@@ -14,6 +14,11 @@ from copy import deepcopy
 def _endOfHtmlElement(self):
     pass
 
+def _endOfCommentDjangoTag(self):
+    pass
+
+def _startOfCommentDjangoTag(self):
+    pass
 }
 
 htmlDocument
@@ -34,6 +39,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
+    | {!self.last_was_django_comment}? {self._startOfCommentDjangoTag()} djangoComment {self._endOfCommentDjangoTag()}
     ;
 
 djangoDebug
@@ -42,6 +48,10 @@ djangoDebug
 
 djangoWith
     : DJ_START_WITH htmlContent DJ_END_WITH
+    ;
+
+djangoComment
+    : DJ_START_COMMENT htmlContent DJ_END_COMMENT
     ;
 
 djangoSpaceless

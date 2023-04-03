@@ -25,6 +25,7 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     attr_stack = []
     tag_stack = []
+    last_was_django_comment: bool
 
     # Customize the function generated from the htmlTagName parser rule to produce valid tag names.
     def htmlTagName(self, parent=None):
@@ -51,3 +52,9 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     def _endOfHtmlElement(self):
         self.tag_stack.pop()
+
+    def _startOfCommentDjangoTag(self):
+        last_was_django_comment = True
+
+    def _endOfCommentDjangoTag(self):
+        last_was_django_comment = False

@@ -32,6 +32,14 @@ DJ_END_WITH
     : DJ_OPEN 'endwith' DJ_CLOSE
     ;
 
+DJ_START_COMMENT
+    : DJ_OPEN 'comment' DJ_CLOSE
+    ;
+
+DJ_END_COMMENT
+    : DJ_OPEN 'endcomment' DJ_CLOSE
+    ;
+
 DJ_START_SPACELESS
     : DJ_OPEN 'spaceless' DJ_CLOSE
     ;
