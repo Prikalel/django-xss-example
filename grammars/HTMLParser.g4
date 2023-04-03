@@ -14,11 +14,7 @@ from copy import deepcopy
 def _endOfHtmlElement(self):
     pass
 
-def _endOfCommentDjangoTag(self):
-    pass
-
-def _startOfCommentDjangoTag(self):
-    pass
+last_was_django_comment: bool = False
 }
 
 htmlDocument
@@ -39,7 +35,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
-    | {!self.last_was_django_comment}? {self._startOfCommentDjangoTag()} djangoComment {self._endOfCommentDjangoTag()}
+    | {not self.last_was_django_comment}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;
 
 djangoDebug

@@ -52,9 +52,3 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     def _endOfHtmlElement(self):
         self.tag_stack.pop()
-
-    def _startOfCommentDjangoTag(self):
-        last_was_django_comment = True
-
-    def _endOfCommentDjangoTag(self):
-        last_was_django_comment = False
