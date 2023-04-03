@@ -56,6 +56,14 @@ DJ_TEMPLATE_TAG_OPTION
     : 'openblock' | 'closeblock' | 'openvariable' | 'closevariable' | 'openbrace' | 'closebrace' | 'opencomment' | 'closecomment'
     ;
 
+DJ_END_BLOCK
+    : DJ_OPEN 'endblock' DJ_CLOSE
+    ;
+
+DJ_BLOCK_NAME
+    : 'name1' | 'name2' | 'name3'
+    ;
+
 NEWLINE
     : '\n'
     ;

@@ -15,6 +15,7 @@ def _endOfHtmlElement(self):
     pass
 
 last_was_django_comment: bool = False
+last_was_django_block: bool = False
 }
 
 htmlDocument
@@ -35,6 +36,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
+    | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
     | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;
 
@@ -48,6 +50,10 @@ djangoWith
 
 djangoComment
     : DJ_START_COMMENT htmlContent DJ_END_COMMENT
+    ;
+
+djangoBlock
+    : DJ_OPEN 'block ' djangoBlockName DJ_CLOSE htmlContent DJ_END_BLOCK
     ;
 
 djangoSpaceless
@@ -72,6 +78,10 @@ htmlAttributeName
 
 htmlAttributeValue
     : ATTVALUE_VALUE
+    ;
+
+djangoBlockName
+    : DJ_BLOCK_NAME
     ;
 
 htmlTagName

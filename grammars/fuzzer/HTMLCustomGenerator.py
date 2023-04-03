@@ -9,6 +9,7 @@ import json
 import random
 
 from os.path import dirname, join
+import string
 
 from grammarinator.runtime import *
 
@@ -26,12 +27,24 @@ class HTMLCustomGenerator(HTMLGenerator):
     attr_stack = []
     tag_stack = []
     last_was_django_comment: bool
+    django_block_names = []
 
     # Customize the function generated from the htmlTagName parser rule to produce valid tag names.
     def htmlTagName(self, parent=None):
         current = UnparserRule(name='htmlTagName', parent=parent)
         name = random.choice(tags[self.tag_stack[-1]]['children'] or tag_names if self.tag_stack else tag_names)
         self.tag_stack.append(name)
+        UnlexerRule(src=name, parent=current)
+        return current
+    
+    def djangoBlockName(self, parent=None):
+        current = UnparserRule(name='djangoBlockName', parent=parent)
+        name_length = 1
+        name = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(name_length))
+        while name in self.django_block_names:
+            name = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(name_length))
+            name_length += 1
+        self.django_block_names.append(name)
         UnlexerRule(src=name, parent=current)
         return current
 
