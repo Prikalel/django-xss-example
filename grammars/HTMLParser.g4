@@ -4,7 +4,7 @@
 
 parser grammar HTMLParser;
 
-options { tokenVocab=HTMLLexer;}
+options { tokenVocab=HTMLLexer; language='Python3'; }
 
 @header {
 from copy import deepcopy
@@ -13,6 +13,15 @@ from copy import deepcopy
 @parser::member {
 def _endOfHtmlElement(self):
     pass
+
+def _endOfDjangoWithBlock(self):
+    pass
+
+def _startOfDjangoWithBlock(self):
+    pass
+
+def _hasAtLeastOneVariableDefined(self) -> bool:
+    return False
 
 last_was_django_comment: bool = False
 last_was_django_block: bool = False
@@ -36,6 +45,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
+    | {2 * self._hasAtLeastOneVariableDefined()}? djangoVariable
     | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
     | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;
@@ -45,7 +55,7 @@ djangoDebug
     ;
 
 djangoWith
-    : DJ_START_WITH htmlContent DJ_END_WITH
+    : {self._startOfDjangoWithBlock()} DJ_OPEN DJ_WITH_KEYWORD djangoWithVariables+ DJ_CLOSE htmlContent DJ_END_WITH {self._endOfDjangoWithBlock()}
     ;
 
 djangoComment
@@ -53,7 +63,7 @@ djangoComment
     ;
 
 djangoBlock
-    : DJ_OPEN 'block ' djangoBlockName DJ_CLOSE htmlContent DJ_END_BLOCK
+    : DJ_OPEN DJ_BLOCK_KEYWORD djangoBlockName DJ_CLOSE htmlContent DJ_END_BLOCK
     ;
 
 djangoSpaceless
@@ -64,12 +74,32 @@ djangoTemplateTag
     : DJ_TEMPLATE_TAG
     ;
 
+djangoWithVariables
+    : djangoWithVariable DJ_WITH_EQUALS djangoWithVariableValue DJ_WITH_SPACE
+    ;
+
+djangoVariable
+    : DJ_VARIABLE_OPEN djangoDefinedVariable DJ_FORCE_ESCAPE_FILTER DJ_VARIABLE_CLOSE
+    ;
+
+djangoDefinedVariable
+    : DJ_VARIABLE
+    ;
+
+djangoWithVariable
+    : DJ_VARIABLE
+    ;
+
+djangoWithVariableValue
+    : DJ_VALUE
+    ;
+
 htmlContent
     : htmlChardata? (htmlElement htmlChardata?)*
     ;
 
 htmlAttribute
-    : attr_name=htmlAttributeName TAG_EQUALS htmlAttributeValue
+    : htmlAttributeName TAG_EQUALS htmlAttributeValue
     ;
 
 htmlAttributeName

@@ -8,16 +8,36 @@ DJ_CLOSE
     : ' %}'
     ;
 
+DJ_VARIABLE_OPEN
+    : '{{ '
+    ;
+
+DJ_VARIABLE_CLOSE
+    : ' }}'
+    ;
+
+DJ_FORCE_ESCAPE_FILTER
+    : '|force_escape'
+    ;
+
 DJ_DEBUG
     : DJ_OPEN 'debug' DJ_CLOSE
     ;
 
-DJ_START_WITH
-    : DJ_OPEN 'with ' DJ_WITH_RULES+ DJ_CLOSE
+DJ_WITH_KEYWORD
+    : 'with '
     ;
 
-DJ_WITH_RULES
-    : DJ_VARIABLE '=' DJ_VALUE ' '
+DJ_BLOCK_KEYWORD
+    : 'block '
+    ;
+
+DJ_WITH_EQUALS
+    : '='
+    ;
+
+DJ_WITH_SPACE
+    : ' '
     ;
 
 DJ_VARIABLE

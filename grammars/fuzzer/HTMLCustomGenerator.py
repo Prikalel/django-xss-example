@@ -1,15 +1,9 @@
-# Copyright (c) 2017-2021 Renata Hodovan, Akos Kiss.
-#
-# Licensed under the BSD 3-Clause License
-# <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
-# This file may not be copied, modified, or distributed except
-# according to those terms.
-
 import json
 import random
 
 from os.path import dirname, join
 import string
+from typing import List
 
 from grammarinator.runtime import *
 
@@ -27,7 +21,8 @@ class HTMLCustomGenerator(HTMLGenerator):
     attr_stack = []
     tag_stack = []
     last_was_django_comment: bool
-    django_block_names = []
+    django_block_names: List[str] = []
+    django_variables_block_stack: List[List[str]] = []
 
     # Customize the function generated from the htmlTagName parser rule to produce valid tag names.
     def htmlTagName(self, parent=None):
@@ -37,15 +32,31 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
     
+    # Customize the function generated from the djangoBlockName parser rule to produce unique block names.
     def djangoBlockName(self, parent=None):
         current = UnparserRule(name='djangoBlockName', parent=parent)
         name_length = 1
-        name = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(name_length))
+        name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
         while name in self.django_block_names:
-            name = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(name_length))
+            name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
             name_length += 1
         self.django_block_names.append(name)
         UnlexerRule(src=name, parent=current)
+        return current
+
+    # Customize the function generated from the djangoWithVariable parser rule to produce variable names and save them to stack.
+    def djangoWithVariable(self, parent=None):
+        current = UnparserRule(name='djangoWithVariable', parent=parent)
+        name = 'var' + str(sum(map(len, self.django_variables_block_stack)))
+        self.django_variables_block_stack[-1].append(name)
+        UnlexerRule(src=name, parent=current)
+        return current
+
+    def djangoDefinedVariable(self, parent=None):
+        current = UnparserRule(name='djangoDefinedVariable', parent=parent)
+        django_variable_stack = random.choice(self.django_variables_block_stack)
+        django_defined_variable_name = random.choice(django_variable_stack)
+        UnlexerRule(src=django_defined_variable_name, parent=current)
         return current
 
     # Customize the function generated from the htmlAttributeName parser rule to produce valid attribute names.
@@ -65,3 +76,12 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     def _endOfHtmlElement(self):
         self.tag_stack.pop()
+
+    def _startOfDjangoWithBlock(self):
+        self.django_variables_block_stack.append([])
+
+    def _endOfDjangoWithBlock(self):
+        self.django_variables_block_stack.pop()
+        
+    def _hasAtLeastOneVariableDefined(self) -> bool:
+        return len(self.django_variables_block_stack) > 0
