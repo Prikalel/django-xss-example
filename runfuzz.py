@@ -2,7 +2,6 @@ import django
 import os
 import logging
 import subprocess
-import sys
 from django.conf import settings
 import django
 from django.template import Template, Context, loader
@@ -11,6 +10,8 @@ from selen import Driver
 from progress.bar import IncrementalBar
 from grammarinator.generate import *
 from multiprocessing import Pool
+
+logger = logging.getLogger("Fuzzer")
 
 def django_setup():
     settings.configure(TEMPLATES=[
@@ -49,8 +50,8 @@ def check_test(num: int, d: Driver) -> bool:  # true if found
             if d.is_alert_present(output_rendered_name):
                 bar.finish()
                 found = True
-                print(output_rendered_name)
-                print("Found!!!")
+                logger.warning("XSS vulnerable example available at: %s", output_rendered_name)
+                logger.info("Found!!!")
                 continue
             bar.next()
         if os.path.exists(output_rendered_name):
@@ -71,12 +72,29 @@ def run():
     found: bool = False
 
     while not found:
-        print("Creating new pool...")
+        logger.info("Creating new pool...")
         generate_tests(num_of_tests, g)
         found = check_test(num_of_tests, d)
         if not found:
-            print(f"Not found. Have run {num_of_tests} tests...")
+            logger.info(f"Not found. Have run {num_of_tests} tests...")
+
+def prepare_fuzzer():
+    logger.info("Preparing fuzzer for generating tests...")
+    result = subprocess.run(["grammarinator-process", "grammars/HTMLLexer.g4", "grammars/HTMLParser.g4", "-o", "grammars/fuzzer"], capture_output=True, text=True, check=True, timeout=10)
+    logger.info("Fuzzer prepared and grammar is ready!")
+    logger.debug('output: %s', result.stdout)
+    logger.debug('error: %s', result.stderr)
+
+def setup_logger():
+    console_handler = logging.StreamHandler()
+    FORMAT = "%(asctime)s — %(name)s — %(levelname)s — %(message)s"
+    format = logging.Formatter(FORMAT, validate=True)
+    console_handler.setFormatter(format)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":
+    setup_logger()
+    prepare_fuzzer()
     run()
