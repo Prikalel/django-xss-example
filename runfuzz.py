@@ -83,6 +83,12 @@ def run():
 
 def prepare_fuzzer():
     logger.info("Preparing fuzzer for generating tests...")
+    HTMLGenerator_modify_time = os.path.getmtime("grammars/fuzzer/HTMLGenerator.py")
+    HTMLLexer_modify_time = os.path.getmtime("grammars/HTMLLexer.g4")
+    HTMLParser_modify_time = os.path.getmtime("grammars/HTMLParser.g4")
+    if HTMLGenerator_modify_time > HTMLLexer_modify_time and HTMLGenerator_modify_time > HTMLParser_modify_time:
+        logger.info("Will not run grammarinator-process as grammar is already ready...")
+        return
     result = subprocess.run(["grammarinator-process", "grammars/HTMLLexer.g4", "grammars/HTMLParser.g4", "-o", "grammars/fuzzer"], capture_output=True, text=True, check=True, timeout=10)
     logger.info("Fuzzer prepared and grammar is ready!")
     logger.debug('output: %s', result.stdout)
