@@ -7,6 +7,7 @@ import django
 from django.template import Template, Context, loader
 from django.template.loader import get_template
 from selen import Driver
+from djangocontext import ContextLoader
 from progress.bar import IncrementalBar
 from grammarinator.generate import *
 from multiprocessing import Pool
@@ -42,11 +43,13 @@ def check_test(num: int, d: Driver) -> bool:  # true if found
     found: bool = False
     bar = IncrementalBar('Countdown', max=num)
     for i in range(num):
+        template_filepath: str = f"./polls/templates/polls/test_{i}.html"
         output_rendered_name = f"./polls/templates/polls/rendered_test_{i}.html"
         if not found:
             t = get_template(f'test_{i}.html')
+            ctx = ContextLoader(template_filepath)
             with open(output_rendered_name, "w") as text_file:
-                text_file.write(t.render(dict()))
+                text_file.write(t.render(ctx.get_context()))
             if d.is_alert_present(output_rendered_name):
                 bar.finish()
                 found = True
@@ -56,7 +59,7 @@ def check_test(num: int, d: Driver) -> bool:  # true if found
             bar.next()
         if os.path.exists(output_rendered_name):
             os.remove(output_rendered_name)
-        os.remove(f"./polls/templates/polls/test_{i}.html")
+        os.remove(template_filepath)
 
     if not found:
         bar.finish()
