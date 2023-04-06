@@ -20,9 +20,10 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     django_context = dict()  # Контекст шаблона.
     last_json_field_name = []  # Буфер для создания новой переменной.
-    attr_stack = []  # Валидные значения html-атрибутов
-    tag_stack = []  # Валидные html-тэги и их атрибуты
-    django_block_names: List[str] = []  # Уникальные имена блоков
+    attr_stack = []  # Валидные значения html-атрибутов.
+    tag_stack = []  # Валидные html-тэги и их атрибуты.
+    for_variables_stack = []  # Имена переменных, которые используются в for-циклах.
+    django_block_names: List[str] = []  # Уникальные имена блоков.
     django_variables_block_stack: List[List[str]] = []  # Введённые через with-блоки переменные django.
 
     # Получение случайного значения для контекстной переменной django.
@@ -113,6 +114,28 @@ class HTMLCustomGenerator(HTMLGenerator):
         django_defined_variable_name = random.choice(self.__getContextVariablesOfCertainType(str))
         UnlexerRule(src=django_defined_variable_name, parent=current)
         return current
+    
+    # Существующее имя django-переменной из контекста, которая является списком.
+    def djangoDefinedContextListVariable(self, parent=None):
+        current = UnparserRule(name='djangoDefinedContextListVariable', parent=parent)
+        django_defined_variable_name = random.choice(self.__getContextVariablesOfCertainType(list))
+        UnlexerRule(src=django_defined_variable_name, parent=current)
+        return current
+
+    # Генерируем + сохраняем имя переменной for-loop.
+    def djangoForLoopVariableName(self, parent=None):
+        current = UnparserRule(name='djangoForLoopVariableName', parent=parent)
+        name = 'loop_var' + str(len(self.for_variables_stack))
+        UnlexerRule(src=name, parent=current)
+        self.for_variables_stack.append(name)
+        return current
+
+    # Имя for-loop переменной.
+    def djangoDefinedLoopVariable(self, parent=None):
+        current = UnparserRule(name='djangoDefinedLoopVariable', parent=parent)
+        django_defined_variable_name = random.choice(self.for_variables_stack)
+        UnlexerRule(src=django_defined_variable_name, parent=current)
+        return current
 
     # Валидное имя атрибута.
     def htmlAttributeName(self, parent=None):
@@ -140,10 +163,22 @@ class HTMLCustomGenerator(HTMLGenerator):
     def _endOfDjangoWithBlock(self):
         self.django_variables_block_stack.pop()
 
+    # Конец django for-цикла.
+    def _endOfDjangoForLoop(self):
+        self.for_variables_stack.pop()
+
     # Есть ли хотя бы 1 определенная django-переменная из with-блока, которую можно использовать для вставки.
     def _hasAtLeastOneWithVariableDefined(self) -> bool:
         return len(self.django_variables_block_stack) > 0
 
-    # Есть ли хотя бы 1 определённая django-переменная из контекста.
+    # Есть ли хотя бы 1 определённая строковая django-переменная из контекста.
     def _hasAtLeastOneContextStringVariableDefined(self) -> bool:
         return len(self.__getContextVariablesOfCertainType(str)) > 0
+    
+    # Есть ли хотя бы 1 определённая django-переменная из контекста, которая является списком.
+    def _hasAtLeastOneContextListVariableDefined(self) -> bool:
+        return len(self.__getContextVariablesOfCertainType(list)) > 0
+    
+    # Есть ли хотя бы 1 переменная из цикла.
+    def _hasAtLeastOneForLoopVariable(self) -> bool:
+        return len(self.for_variables_stack) > 0

@@ -60,6 +60,14 @@ DJ_BLOCK_KEYWORD
     : 'block '
     ;
 
+DJ_FOR_KEYWORD
+    : 'for '
+    ;
+
+DJ_FOR_IN_KEYWORD
+    : ' in '
+    ;
+
 DJ_WITH_EQUALS
     : '='
     ;
@@ -86,6 +94,10 @@ DJ_START_COMMENT
 
 DJ_END_COMMENT
     : DJ_OPEN 'endcomment' DJ_CLOSE
+    ;
+
+DJ_END_FOR_LOOP
+    : DJ_OPEN 'endfor' DJ_CLOSE
     ;
 
 DJ_START_SPACELESS

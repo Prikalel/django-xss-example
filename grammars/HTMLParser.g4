@@ -17,6 +17,9 @@ def _endOfHtmlElement(self):
 def _endOfDjangoWithBlock(self):
     pass
 
+def _endOfDjangoForLoop(self):
+    pass
+
 def _startOfDjangoWithBlock(self):
     pass
 
@@ -24,6 +27,12 @@ def _hasAtLeastOneWithVariableDefined(self) -> bool:
     return False
 
 def _hasAtLeastOneContextStringVariableDefined(self) -> bool:
+    return False
+
+def _hasAtLeastOneForLoopVariable(self) -> bool:
+    return False
+
+def _hasAtLeastOneContextListVariableDefined(self) -> bool:
     return False
 
 last_was_django_comment: bool = False
@@ -48,7 +57,8 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
-    | {self._hasAtLeastOneContextStringVariableDefined() or self._hasAtLeastOneWithVariableDefined()}? djangoVariable
+    | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
+    | {self._hasAtLeastOneContextStringVariableDefined() or self._hasAtLeastOneWithVariableDefined() or self._hasAtLeastOneForLoopVariable()}? djangoVariable
     | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
     | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;
@@ -77,6 +87,10 @@ djangoTemplateTag
     : DJ_TEMPLATE_TAG
     ;
 
+djangoForLoop
+    : DJ_OPEN DJ_FOR_KEYWORD djangoForLoopVariableName DJ_FOR_IN_KEYWORD djangoDefinedContextListVariable DJ_CLOSE NEWLINE htmlContent NEWLINE DJ_END_FOR_LOOP {self._endOfDjangoForLoop()}
+    ;
+
 djangoWithVariables
     : djangoWithVariable DJ_WITH_EQUALS djangoWithVariableValue DJ_WITH_SPACE
     ;
@@ -88,6 +102,19 @@ djangoVariable
 djangoDefinedVariable
     : {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
     | {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
+    | {self._hasAtLeastOneForLoopVariable()}? djangoDefinedLoopVariable
+    ;
+
+djangoDefinedLoopVariable
+    : DJ_VARIABLE
+    ;
+
+djangoForLoopVariableName
+    : DJ_VARIABLE
+    ;
+
+djangoDefinedContextListVariable
+    : DJ_VARIABLE
     ;
 
 djangoDefinedWithVariable
