@@ -20,7 +20,10 @@ def _endOfDjangoWithBlock(self):
 def _startOfDjangoWithBlock(self):
     pass
 
-def _hasAtLeastOneVariableDefined(self) -> bool:
+def _hasAtLeastOneWithVariableDefined(self) -> bool:
+    return False
+
+def _hasAtLeastOneContextStringVariableDefined(self) -> bool:
     return False
 
 last_was_django_comment: bool = False
@@ -45,7 +48,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
-    | {self._hasAtLeastOneVariableDefined()}? djangoVariable
+    | {self._hasAtLeastOneContextStringVariableDefined() or self._hasAtLeastOneWithVariableDefined()}? djangoVariable
     | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
     | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;
@@ -83,6 +86,15 @@ djangoVariable
     ;
 
 djangoDefinedVariable
+    : {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
+    | {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
+    ;
+
+djangoDefinedWithVariable
+    : DJ_VARIABLE
+    ;
+
+djangoDefinedContextVariable
     : DJ_VARIABLE
     ;
 
@@ -91,7 +103,8 @@ djangoWithVariable
     ;
 
 djangoWithVariableValue
-    : DJ_VALUE
+    : {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
+    | DJ_VALUE
     ;
 
 htmlContent

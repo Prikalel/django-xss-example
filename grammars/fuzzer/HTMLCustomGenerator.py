@@ -100,10 +100,17 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
-    # Существующее имя django-переменной. Это или имя из with-блока или из контекста.
-    def djangoDefinedVariable(self, parent=None):
-        current = UnparserRule(name='djangoDefinedVariable', parent=parent)
-        django_defined_variable_name = random.choice(self.__getAllDefinedWithVariables() + self.__getContextVariablesOfCertainType(str))
+    # Существующее имя django-переменной из with-блока.
+    def djangoDefinedWithVariable(self, parent=None):
+        current = UnparserRule(name='djangoDefinedWithVariable', parent=parent)
+        django_defined_variable_name = random.choice(self.__getAllDefinedWithVariables())
+        UnlexerRule(src=django_defined_variable_name, parent=current)
+        return current
+
+    # Существующее имя django-переменной из контекста.
+    def djangoDefinedContextVariable(self, parent=None):
+        current = UnparserRule(name='djangoDefinedContextVariable', parent=parent)
+        django_defined_variable_name = random.choice(self.__getContextVariablesOfCertainType(str))
         UnlexerRule(src=django_defined_variable_name, parent=current)
         return current
 
@@ -133,6 +140,10 @@ class HTMLCustomGenerator(HTMLGenerator):
     def _endOfDjangoWithBlock(self):
         self.django_variables_block_stack.pop()
 
-    # Есть ли хотя бы 1 определенная django-переменная, которую можно использовать для вставки.
-    def _hasAtLeastOneVariableDefined(self) -> bool:
-        return len(self.django_variables_block_stack) > 0 or len(self.__getContextVariablesOfCertainType(str)) > 0
+    # Есть ли хотя бы 1 определенная django-переменная из with-блока, которую можно использовать для вставки.
+    def _hasAtLeastOneWithVariableDefined(self) -> bool:
+        return len(self.django_variables_block_stack) > 0
+
+    # Есть ли хотя бы 1 определённая django-переменная из контекста.
+    def _hasAtLeastOneContextStringVariableDefined(self) -> bool:
+        return len(self.__getContextVariablesOfCertainType(str)) > 0
