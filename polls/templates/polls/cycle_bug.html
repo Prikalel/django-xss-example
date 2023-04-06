@@ -1,0 +1,15 @@
+{# context is simple dict with one key {A=["1", "2", "3"]} #}
+
+{% with example_defined_variable="123" %}
+
+{% for item in A %}
+
+Current item: {{ item }}
+
+Current cycle item: {% cycle example_defined_variable %}
+
+{% endfor %}
+
+Visible page.
+
+{% endwith %}
