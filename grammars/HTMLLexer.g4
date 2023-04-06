@@ -68,11 +68,15 @@ DJ_FOR_IN_KEYWORD
     : ' in '
     ;
 
+DJ_CYCLE_KEYWORD
+    : 'cycle '
+    ;
+
 DJ_WITH_EQUALS
     : '='
     ;
 
-DJ_WITH_SPACE
+DJ_SPACE
     : ' '
     ;
 
@@ -81,7 +85,7 @@ DJ_VARIABLE
     ;
 
 DJ_VALUE
-    : '123' | '"<script>alert(\'XSS\');</script>"'
+    : '"123"' | '"<script>alert(\'XSS\');</script>"'
     ;
 
 DJ_END_WITH

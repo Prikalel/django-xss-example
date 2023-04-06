@@ -58,6 +58,7 @@ django
     | djangoDebug
     | djangoTemplateTag
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
+    | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
     | {self._hasAtLeastOneContextStringVariableDefined() or self._hasAtLeastOneWithVariableDefined() or self._hasAtLeastOneForLoopVariable()}? djangoVariable
     | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
     | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
@@ -91,8 +92,17 @@ djangoForLoop
     : DJ_OPEN DJ_FOR_KEYWORD djangoForLoopVariableName DJ_FOR_IN_KEYWORD djangoDefinedContextListVariable DJ_CLOSE NEWLINE htmlContent NEWLINE DJ_END_FOR_LOOP {self._endOfDjangoForLoop()}
     ;
 
+djangoCycle
+    : DJ_OPEN DJ_CYCLE_KEYWORD (djangoCycleValue DJ_SPACE)+ DJ_CLOSE
+    ;
+
+djangoCycleValue
+    : {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
+    | djangoCycleStringValue
+    ;
+
 djangoWithVariables
-    : djangoWithVariable DJ_WITH_EQUALS djangoWithVariableValue DJ_WITH_SPACE
+    : djangoWithVariable DJ_WITH_EQUALS djangoWithVariableValue DJ_SPACE
     ;
 
 djangoVariable
@@ -127,6 +137,10 @@ djangoDefinedContextVariable
 
 djangoWithVariable
     : DJ_VARIABLE
+    ;
+
+djangoCycleStringValue
+    : DJ_VALUE
     ;
 
 djangoWithVariableValue
