@@ -34,6 +34,10 @@ class HTMLCustomGenerator(HTMLGenerator):
         i: int = random.randint(1, 10)
         return [self.__getRandomStringValue() for k in range(i)]
 
+    # Получение контекстных переменных, значение которых является указанным типом.
+    def __getContextVariablesOfCertainType(self, type):
+        return list(item[0] for item in self.django_context.items() if isinstance(item[1], type))
+
     # Генерация уникального имени переменной django-контекста.
     def jsonFieldName(self, parent=None):
         current = UnparserRule(name='jsonFieldName', parent=parent)
@@ -84,7 +88,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
-    # Сохранение имён переменных django и контроль, чтобы они были уникальными.
+    # Сохранение имён переменных django + проверка, чтобы они были уникальными.
     def djangoWithVariable(self, parent=None):
         current = UnparserRule(name='djangoWithVariable', parent=parent)
         name = 'var' + str(sum(map(len, self.django_variables_block_stack)))
@@ -92,11 +96,11 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
-    # Существующее имя django-переменной.
+    # Существующее имя django-переменной. Это или имя из with-блока или из контекста.
     def djangoDefinedVariable(self, parent=None):
         current = UnparserRule(name='djangoDefinedVariable', parent=parent)
         django_variable_stack = random.choice(self.django_variables_block_stack)
-        django_defined_variable_name = random.choice(django_variable_stack)
+        django_defined_variable_name = random.choice(django_variable_stack + self.__getContextVariablesOfCertainType(str))
         UnlexerRule(src=django_defined_variable_name, parent=current)
         return current
 
