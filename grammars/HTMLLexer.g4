@@ -16,6 +16,34 @@ DJ_VARIABLE_CLOSE
     : ' }}'
     ;
 
+JSON_BRACE_OPEN
+    : '{ '
+    ;
+
+JSON_BRACE_CLOSE
+    : ' }'
+    ;
+
+JSON_COMMA
+    : ','
+    ;
+
+JSON_QUOTES
+    : '"'
+    ;
+
+JSON_COLON
+    : ':'
+    ;
+
+DJ_COMMENT_OPEN
+    : '{# '
+    ;
+
+DJ_COMMENT_CLOSE
+    : ' #}'
+    ;
+
 DJ_FORCE_ESCAPE_FILTER
     : '|force_escape'
     ;
@@ -82,6 +110,18 @@ DJ_END_BLOCK
 
 DJ_BLOCK_NAME
     : 'name1' | 'name2' | 'name3'
+    ;
+
+JSON_FIELD_NAME
+    : 'name'
+    ;
+
+JSON_FIELD_STRING_VALUE
+    : 'value'
+    ;
+
+JSON_FIELD_LIST_VALUE
+    : '["value","value"]'
     ;
 
 NEWLINE

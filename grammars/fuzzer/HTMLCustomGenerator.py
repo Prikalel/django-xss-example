@@ -18,11 +18,51 @@ tag_names = list(tags.keys())
 
 class HTMLCustomGenerator(HTMLGenerator):
 
-    attr_stack = []
-    tag_stack = []
-    last_was_django_comment: bool
-    django_block_names: List[str] = []
-    django_variables_block_stack: List[List[str]] = []
+    django_context = dict()  # Контекст шаблона.
+    last_json_field_name = []  # Буфер для создания новой переменной.
+    attr_stack = []  # Валидные значения html-атрибутов
+    tag_stack = []  # Валидные html-тэги и их атрибуты
+    django_block_names: List[str] = []  # Уникальные имена блоков
+    django_variables_block_stack: List[List[str]] = []  # Введённые через with-блоки переменные django.
+
+    # Получение случайного значения для контекстной переменной django.
+    def __getRandomStringValue(self):
+        return random.choice(["123", "<script>alert(\'XSS\');</script>", "<h1>HELLO!</h1>"])
+
+    # Получение случайно сгенерированного списка.
+    def __getRandomListValue(self):
+        i: int = random.randint(1, 10)
+        return [self.__getRandomStringValue() for k in range(i)]
+
+    # Customize the function generated from the jsonFieldName parser rule to produce valid json field names and store them.
+    def jsonFieldName(self, parent=None):
+        current = UnparserRule(name='jsonFieldName', parent=parent)
+        name_length = 1
+        name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
+        while name in self.django_context.keys():
+            name_length += 1
+            name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
+        UnlexerRule(src=name, parent=current)
+        self.last_json_field_name.append(name)
+        return current
+
+    # Customize the function generated from the jsonStringValue parser rule to store json field value.
+    def jsonStringValue(self, parent=None):
+        current = UnparserRule(name='jsonStringValue', parent=parent)
+        value = self.__getRandomStringValue()
+        UnlexerRule(src=value, parent=current)
+        new_field_name = self.last_json_field_name.pop()
+        self.django_context[new_field_name] = value
+        return current
+
+    # Customize the function generated from the jsonListValue parser rule to generate and store json field value as list.
+    def jsonListValue(self, parent=None):
+        current = UnparserRule(name='jsonListValue', parent=parent)
+        value = self.__getRandomListValue()
+        UnlexerRule(src=json.dumps(value), parent=current)
+        new_field_name = self.last_json_field_name.pop()
+        self.django_context[new_field_name] = value
+        return current
 
     # Customize the function generated from the htmlTagName parser rule to produce valid tag names.
     def htmlTagName(self, parent=None):
@@ -38,8 +78,8 @@ class HTMLCustomGenerator(HTMLGenerator):
         name_length = 1
         name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
         while name in self.django_block_names:
-            name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
             name_length += 1
+            name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
         self.django_block_names.append(name)
         UnlexerRule(src=name, parent=current)
         return current

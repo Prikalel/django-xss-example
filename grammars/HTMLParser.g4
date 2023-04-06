@@ -28,7 +28,7 @@ last_was_django_block: bool = False
 }
 
 htmlDocument
-    : htmlElements+
+    : djangoContext NEWLINE htmlElements+
     ;
 
 htmlElements
@@ -100,6 +100,31 @@ htmlContent
 
 htmlAttribute
     : htmlAttributeName TAG_EQUALS htmlAttributeValue
+    ;
+
+djangoContext
+    : DJ_COMMENT_OPEN JSON_BRACE_OPEN djangoContextVariableDefinition (JSON_COMMA djangoContextVariableDefinition)* JSON_BRACE_CLOSE DJ_COMMENT_CLOSE
+    ;
+
+djangoContextVariableDefinition
+    : JSON_QUOTES jsonFieldName JSON_QUOTES JSON_COLON jsonFieldValue
+    ;
+
+jsonFieldName
+    : JSON_FIELD_NAME
+    ;
+
+jsonFieldValue
+    : JSON_QUOTES jsonStringValue JSON_QUOTES
+    | jsonListValue
+    ;
+
+jsonStringValue
+    : JSON_FIELD_STRING_VALUE
+    ;
+
+jsonListValue
+    : JSON_FIELD_LIST_VALUE
     ;
 
 htmlAttributeName
