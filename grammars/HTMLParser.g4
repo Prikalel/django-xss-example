@@ -45,7 +45,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
-    | {2 * self._hasAtLeastOneVariableDefined()}? djangoVariable
+    | {self._hasAtLeastOneVariableDefined()}? djangoVariable
     | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
     | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;

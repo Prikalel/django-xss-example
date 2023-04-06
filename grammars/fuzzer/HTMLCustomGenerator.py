@@ -8,7 +8,7 @@ from typing import List
 from grammarinator.runtime import *
 
 from grammars.fuzzer.HTMLGenerator import HTMLGenerator
-
+from itertools import chain
 
 with open(join(dirname(__file__), 'html.json')) as f:
     tags = json.load(f)
@@ -37,6 +37,10 @@ class HTMLCustomGenerator(HTMLGenerator):
     # Получение контекстных переменных, значение которых является указанным типом.
     def __getContextVariablesOfCertainType(self, type):
         return list(item[0] for item in self.django_context.items() if isinstance(item[1], type))
+
+    # Получение всех переменных определенных в with-блоках.
+    def __getAllDefinedWithVariables(self):
+        return list(chain.from_iterable(self.django_variables_block_stack))
 
     # Генерация уникального имени переменной django-контекста.
     def jsonFieldName(self, parent=None):
@@ -99,8 +103,7 @@ class HTMLCustomGenerator(HTMLGenerator):
     # Существующее имя django-переменной. Это или имя из with-блока или из контекста.
     def djangoDefinedVariable(self, parent=None):
         current = UnparserRule(name='djangoDefinedVariable', parent=parent)
-        django_variable_stack = random.choice(self.django_variables_block_stack)
-        django_defined_variable_name = random.choice(django_variable_stack + self.__getContextVariablesOfCertainType(str))
+        django_defined_variable_name = random.choice(self.__getAllDefinedWithVariables() + self.__getContextVariablesOfCertainType(str))
         UnlexerRule(src=django_defined_variable_name, parent=current)
         return current
 
@@ -132,4 +135,4 @@ class HTMLCustomGenerator(HTMLGenerator):
 
     # Есть ли хотя бы 1 определенная django-переменная, которую можно использовать для вставки.
     def _hasAtLeastOneVariableDefined(self) -> bool:
-        return len(self.django_variables_block_stack) > 0
+        return len(self.django_variables_block_stack) > 0 or len(self.__getContextVariablesOfCertainType(str)) > 0
