@@ -34,7 +34,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         i: int = random.randint(1, 10)
         return [self.__getRandomStringValue() for k in range(i)]
 
-    # Customize the function generated from the jsonFieldName parser rule to produce valid json field names and store them.
+    # Генерация уникального имени переменной django-контекста.
     def jsonFieldName(self, parent=None):
         current = UnparserRule(name='jsonFieldName', parent=parent)
         name_length = 1
@@ -46,7 +46,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.last_json_field_name.append(name)
         return current
 
-    # Customize the function generated from the jsonStringValue parser rule to store json field value.
+    # Переменная django-контекста как строка: генерация + сохранение в контекст для дальнейшего использования.
     def jsonStringValue(self, parent=None):
         current = UnparserRule(name='jsonStringValue', parent=parent)
         value = self.__getRandomStringValue()
@@ -55,7 +55,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.django_context[new_field_name] = value
         return current
 
-    # Customize the function generated from the jsonListValue parser rule to generate and store json field value as list.
+    # Переменная django-контекста как список строк: генерация + сохранение в контекст для дальнейшего использования.
     def jsonListValue(self, parent=None):
         current = UnparserRule(name='jsonListValue', parent=parent)
         value = self.__getRandomListValue()
@@ -64,7 +64,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.django_context[new_field_name] = value
         return current
 
-    # Customize the function generated from the htmlTagName parser rule to produce valid tag names.
+    # Валидные имена тэгов.
     def htmlTagName(self, parent=None):
         current = UnparserRule(name='htmlTagName', parent=parent)
         name = random.choice(tags[self.tag_stack[-1]]['children'] or tag_names if self.tag_stack else tag_names)
@@ -72,7 +72,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
     
-    # Customize the function generated from the djangoBlockName parser rule to produce unique block names.
+    # Уникальные имена блоков.
     def djangoBlockName(self, parent=None):
         current = UnparserRule(name='djangoBlockName', parent=parent)
         name_length = 1
@@ -84,7 +84,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
-    # Customize the function generated from the djangoWithVariable parser rule to produce variable names and save them to stack.
+    # Сохранение имён переменных django и контроль, чтобы они были уникальными.
     def djangoWithVariable(self, parent=None):
         current = UnparserRule(name='djangoWithVariable', parent=parent)
         name = 'var' + str(sum(map(len, self.django_variables_block_stack)))
@@ -92,6 +92,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
+    # Существующее имя django-переменной.
     def djangoDefinedVariable(self, parent=None):
         current = UnparserRule(name='djangoDefinedVariable', parent=parent)
         django_variable_stack = random.choice(self.django_variables_block_stack)
@@ -99,7 +100,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=django_defined_variable_name, parent=current)
         return current
 
-    # Customize the function generated from the htmlAttributeName parser rule to produce valid attribute names.
+    # Валидное имя атрибута.
     def htmlAttributeName(self, parent=None):
         current = UnparserRule(name='htmlAttributeName', parent=parent)
         name = random.choice(list(tags[self.tag_stack[-1]]['attributes'].keys()) or ['""'])
@@ -107,21 +108,24 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
-    # Customize the function generated from the htmlAttributeValue parser rule to produce valid attribute values
-    # to the current tag and attribute name.
+    # Валидные значения атрибутов для текущего тэга и атрибутов.
     def htmlAttributeValue(self, parent=None):
         current = UnparserRule(name='htmlAttributeValue', parent=parent)
         UnlexerRule(src=random.choice(tags[self.tag_stack[-1]]['attributes'].get(self.attr_stack.pop(), ['""']) or ['""']), parent=current)
         return current
 
+    # Конец определения html-тэга.
     def _endOfHtmlElement(self):
         self.tag_stack.pop()
 
+    # Начало django блока with.
     def _startOfDjangoWithBlock(self):
         self.django_variables_block_stack.append([])
 
+    # Конец django блока with.
     def _endOfDjangoWithBlock(self):
         self.django_variables_block_stack.pop()
-        
+
+    # Есть ли хотя бы 1 определенная django-переменная, которую можно использовать для вставки.
     def _hasAtLeastOneVariableDefined(self) -> bool:
         return len(self.django_variables_block_stack) > 0
