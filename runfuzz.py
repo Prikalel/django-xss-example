@@ -104,12 +104,13 @@ def prepare_fuzzer():
 def clear_directory():
     templates_directory = "./polls/templates/polls"
     only_files = [f for f in os.listdir(templates_directory) if os.path.isfile(os.path.join(templates_directory, f))]
-    for file in filter(lambda x: x.startswith("test_") or x.startswith("rendered_test_"), only_files):
+    for file in filter(lambda x: (x.startswith("test_") or x.startswith("rendered_test_") or x.startswith("t_")) and x.endswith(".html"), only_files):
         logger.info("Found file from previous run: '%s'. Will be deleted!", file)
         os.remove(os.path.join(templates_directory, file))
 
 if __name__ == "__main__":
     setup_logger(logger)
+    setup_logger(logging.getLogger("ContextLoader"), logging.WARNING)
     prepare_fuzzer()
     clear_directory()
     run()

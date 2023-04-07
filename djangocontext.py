@@ -18,6 +18,9 @@ class CommentSection:
 
     def isBlock(self) -> bool:
         return self.type == "block"
+    
+    def isInclude(self) -> bool:
+        return self.type == "include"
 
 class ContextLoader:
     logger: Logger = logging.getLogger("ContextLoader")
@@ -25,14 +28,15 @@ class ContextLoader:
     text: str
     template_relative_path: str
     base_file_relative_path: str
+    created_included_files: List[str]
 
     COMMENT = "{% comment %}"
     ENDCOMMENT = "{% endcomment %}"
     END_INFO = "#}"
 
     def __init__(self, template_filename: str):
-        setup_logger(self.logger, logging.WARNING)
         self.base_file_relative_path = None
+        self.created_included_files = []
         if template_filename is not None:
             self.template_relative_path = template_filename
             with open(template_filename, "r") as text_file:
@@ -59,13 +63,9 @@ class ContextLoader:
             found_pos = self.text.find(self.COMMENT, section_end_index + len(self.ENDCOMMENT))
         return res
 
-    @staticmethod
-    def has_any_block(list_of_sections: List[CommentSection]) -> bool:
-        return any(map(lambda x: x.isBlock(), list_of_sections))
-
     def create_and_modify_files_if_need(self):
         sections = self.get_sections()
-        if self.has_any_block(sections):
+        if any(map(lambda x: x.isBlock(), sections)):
             self.logger.info("Modifying file %s as it contains blocks overriding.", self.template_relative_path)
             filename_without_extension = self.template_relative_path.removesuffix(".html")
             self.base_file_relative_path = filename_without_extension + "_base.html"
@@ -78,8 +78,23 @@ class ContextLoader:
                     text_file.write("{% block " + section.name + " %}\n")
                     text_file.write(os.linesep.join([s for s in section.inner.splitlines() if s]) + "\n")
                     text_file.write("{% endblock %}\n\n\n")
+        if any(map(lambda x: x.isInclude(), sections)):
+            self.logger.info("Creating files for %s as it contains include keywords.", self.template_relative_path)
+            dirpath_to_create_files = os.path.dirname(os.path.abspath(self.template_relative_path))
+            self.logger.info("Will create files in %s directory.", dirpath_to_create_files)
+            for section in filter(lambda x: x.isInclude(), sections):
+                new_filepath = os.path.join(dirpath_to_create_files, section.name)
+                with open(new_filepath, "w") as text_file:
+                    self.logger.debug("Writing file '%s'.", section.name)
+                    text_file.write(os.linesep.join([s for s in section.inner.splitlines() if s]) + "\n")
+                self.created_included_files.append(new_filepath)
+                self.logger.info("Saved for future deletion %s.", new_filepath)
 
     def remove_created_files(self):
-        # Если и создал, то только base-файл.
         if self.base_file_relative_path is not None and os.path.exists(self.base_file_relative_path):
+            self.logger.info("Deleting base file %s...", self.base_file_relative_path)
             os.remove(self.base_file_relative_path)
+        for filename in self.created_included_files:
+            if os.path.exists(filename):
+                self.logger.info("Deleting included file %s...", filename)
+                os.remove(filename)
