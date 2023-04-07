@@ -68,6 +68,7 @@ django
     | djangoWith
     | djangoDebug
     | djangoTemplateTag
+    | djangoNowTag
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
     | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
@@ -108,6 +109,10 @@ djangoBlock
 
 djangoSpaceless
     : DJ_START_SPACELESS htmlContent DJ_END_SPACELESS
+    ;
+
+djangoNowTag
+    : DJ_OPEN DJ_NOW DJ_NOW_FORMAT DJ_CLOSE
     ;
 
 djangoTemplateTag

@@ -48,6 +48,17 @@ DJ_FORCE_ESCAPE_FILTER
     : '|force_escape'
     ;
 
+DJ_NOW
+    : 'now '
+    ;
+
+DJ_NOW_FORMAT
+    : '"SHORT_DATETIME_FORMAT"'
+    | '"DATETIME_FORMAT"'
+    | '"DATE_FORMAT"'
+    | '"SHORT_DATE_FORMAT"'
+    ;
+
 DJ_DEBUG
     : DJ_OPEN 'debug' DJ_CLOSE
     ;
