@@ -64,6 +64,10 @@ DJ_FOR_KEYWORD
     : 'for '
     ;
 
+DJ_AS_KEYWORD
+    : 'as '
+    ;
+
 DJ_FOR_IN_KEYWORD
     : ' in '
     ;

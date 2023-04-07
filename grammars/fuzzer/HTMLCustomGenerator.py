@@ -23,8 +23,20 @@ class HTMLCustomGenerator(HTMLGenerator):
     attr_stack = []  # Валидные значения html-атрибутов.
     tag_stack = []  # Валидные html-тэги и их атрибуты.
     for_variables_stack = []  # Имена переменных, которые используются в for-циклах.
+    cycle_variables_stack = []  # Имена, которые используются для сохранения значения cycle внутри for-циклов.
     django_block_names: List[str] = []  # Уникальные имена блоков.
     django_variables_block_stack: List[List[str]] = []  # Введённые через with-блоки переменные django.
+
+    # Очищение всего перед следующим тестом.
+    def _flushState(self):
+        self.django_context = dict()
+        self.last_json_field_name = []
+        self.attr_stack = []
+        self.tag_stack = [] 
+        self.for_variables_stack = [] 
+        self.cycle_variables_stack = []  
+        self.django_block_names = []
+        self.django_variables_block_stack = []
 
     # Получение случайного значения для контекстной переменной django.
     def __getRandomStringValue(self):
@@ -39,9 +51,17 @@ class HTMLCustomGenerator(HTMLGenerator):
     def __getContextVariablesOfCertainType(self, type):
         return list(item[0] for item in self.django_context.items() if isinstance(item[1], type))
 
+    @staticmethod
+    def __toSingleList(list_of_lists):
+        return list(chain.from_iterable(list_of_lists))
+
     # Получение всех переменных определенных в with-блоках.
     def __getAllDefinedWithVariables(self):
-        return list(chain.from_iterable(self.django_variables_block_stack))
+        return self.__toSingleList(self.django_variables_block_stack)
+
+    # Получение всех переменных определённых в cycle-тэгах.
+    def __getAllDefinedCycleVariables(self):
+        return self.__toSingleList(self.cycle_variables_stack)
 
     # Генерация уникального имени переменной django-контекста.
     def jsonFieldName(self, parent=None):
@@ -128,6 +148,22 @@ class HTMLCustomGenerator(HTMLGenerator):
         name = 'loop_var' + str(len(self.for_variables_stack))
         UnlexerRule(src=name, parent=current)
         self.for_variables_stack.append(name)
+        self.cycle_variables_stack.append([])
+        return current
+
+    # Генерируем + сохраняем имя переменной cycle. Это может возникнуть только внутри цикла, поэтому len(cycle_variables_stack) >0.
+    def djangoCycleVariableName(self, parent=None):
+        current = UnparserRule(name='djangoCycleVariableName', parent=parent)
+        name = 'cycle_var' + str(sum(map(len, self.cycle_variables_stack)))
+        UnlexerRule(src=name, parent=current)
+        self.cycle_variables_stack[-1].append(name)
+        return current
+
+    # Существующее имя cycle переменной.
+    def djangoDefinedCycleVariable(self, parent=None):
+        current = UnparserRule(name='djangoDefinedCycleVariable', parent=parent)
+        django_defined_variable_name = random.choice(self.__getAllDefinedCycleVariables())
+        UnlexerRule(src=django_defined_variable_name, parent=current)
         return current
 
     # Имя for-loop переменной.
@@ -166,6 +202,7 @@ class HTMLCustomGenerator(HTMLGenerator):
     # Конец django for-цикла.
     def _endOfDjangoForLoop(self):
         self.for_variables_stack.pop()
+        self.cycle_variables_stack.pop()
 
     # Есть ли хотя бы 1 определенная django-переменная из with-блока, которую можно использовать для вставки.
     def _hasAtLeastOneWithVariableDefined(self) -> bool:
@@ -182,3 +219,7 @@ class HTMLCustomGenerator(HTMLGenerator):
     # Есть ли хотя бы 1 переменная из цикла.
     def _hasAtLeastOneForLoopVariable(self) -> bool:
         return len(self.for_variables_stack) > 0
+    
+    # Есть хотя бы 1 cycle-переменная.
+    def _hasAtLeastOneCycleVariableDefined(self) -> bool:
+        return len(self.__getAllDefinedCycleVariables()) > 0

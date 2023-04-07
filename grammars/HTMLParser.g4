@@ -23,6 +23,9 @@ def _endOfDjangoForLoop(self):
 def _startOfDjangoWithBlock(self):
     pass
 
+def _flushState(self):
+    pass
+
 def _hasAtLeastOneWithVariableDefined(self) -> bool:
     return False
 
@@ -35,12 +38,21 @@ def _hasAtLeastOneForLoopVariable(self) -> bool:
 def _hasAtLeastOneContextListVariableDefined(self) -> bool:
     return False
 
+def _hasAtLeastOneCycleVariableDefined(self) -> bool:
+    return False
+
+def _hasAtLeastOneDefinedVariable(self) -> bool:
+    return (self._hasAtLeastOneContextStringVariableDefined() or 
+        self._hasAtLeastOneWithVariableDefined() or 
+        self._hasAtLeastOneForLoopVariable() or
+        self._hasAtLeastOneCycleVariableDefined())
+
 last_was_django_comment: bool = False
 last_was_django_block: bool = False
 }
 
 htmlDocument
-    : djangoContext NEWLINE htmlElements+
+    : {self._flushState()} djangoContext NEWLINE htmlElements+
     ;
 
 htmlElements
@@ -59,7 +71,7 @@ django
     | djangoTemplateTag
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
-    | {self._hasAtLeastOneContextStringVariableDefined() or self._hasAtLeastOneWithVariableDefined() or self._hasAtLeastOneForLoopVariable()}? djangoVariable
+    | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
     | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
     | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
     ;
@@ -93,11 +105,12 @@ djangoForLoop
     ;
 
 djangoCycle
-    : DJ_OPEN DJ_CYCLE_KEYWORD (djangoCycleValue DJ_SPACE)+ DJ_CLOSE
+    : DJ_OPEN DJ_CYCLE_KEYWORD djangoCycleValue DJ_SPACE (djangoCycleValue DJ_SPACE)+ (DJ_AS_KEYWORD djangoCycleVariableName)? DJ_CLOSE
     ;
 
 djangoCycleValue
     : {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
+    | {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
     | djangoCycleStringValue
     ;
 
@@ -113,6 +126,7 @@ djangoDefinedVariable
     : {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
     | {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
     | {self._hasAtLeastOneForLoopVariable()}? djangoDefinedLoopVariable
+    | {5*self._hasAtLeastOneCycleVariableDefined()}? djangoDefinedCycleVariable
     ;
 
 djangoDefinedLoopVariable
@@ -132,6 +146,14 @@ djangoDefinedWithVariable
     ;
 
 djangoDefinedContextVariable
+    : DJ_VARIABLE
+    ;
+
+djangoDefinedCycleVariable
+    : DJ_VARIABLE
+    ;
+
+djangoCycleVariableName
     : DJ_VARIABLE
     ;
 
