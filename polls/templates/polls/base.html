@@ -1,0 +1,23 @@
+<html>
+
+Base part <br>
+
+{% for var2 in list_var %}
+
+{% with var0="string_value" %}
+    
+{% block main %}
+    
+Var0: {{ var0 }} <br> {# with #}
+
+Var1: {{ var1 }} <br> {# контекст #}
+
+Var2: {{ var2 }} <br> {# for #}
+
+{% endblock  %}
+
+{% endwith %}
+
+{% endfor %}
+
+</html>
