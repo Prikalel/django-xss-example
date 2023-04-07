@@ -73,6 +73,7 @@ django
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
     | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
     | djangoBlock
+    | {not self.is_in_comment_section}? djangoIncludeTag {self.is_in_comment_section = True} djangoCommentedIncludingTemplate {self.is_in_comment_section = False}
     | {not self.is_in_comment_section}? djangoOverriddenBlock {self.is_in_comment_section = True} djangoCommentedOverridingBlock {self.is_in_comment_section = False}
     ;
 
@@ -88,6 +89,10 @@ djangoCommentedOverridingBlock
     : DJ_START_COMMENT djangoCommentedOverridingBlockInfo htmlElement+ DJ_END_COMMENT
     ;
 
+djangoCommentedIncludingTemplate
+    : DJ_START_COMMENT djangoCommentedIncludingTemplateInfo htmlElement+ DJ_END_COMMENT
+    ;
+
 djangoCommentedOverridingBlockInfo
     : DJ_COMMENT_OPEN JSON_BRACE_OPEN 
       JSON_FIELD_NAMED_TYPE JSON_COLON JSON_FIELD_VALUE_BLOCK JSON_COMMA 
@@ -95,12 +100,27 @@ djangoCommentedOverridingBlockInfo
       JSON_BRACE_CLOSE DJ_COMMENT_CLOSE
     ;
 
+djangoCommentedIncludingTemplateInfo
+    : DJ_COMMENT_OPEN JSON_BRACE_OPEN 
+      JSON_FIELD_NAMED_TYPE JSON_COLON JSON_FIELD_VALUE_INCLUDE JSON_COMMA 
+      JSON_FIELD_NAMED_NAME JSON_COLON JSON_QUOTES jsonIncludingTemplateName JSON_QUOTES 
+      JSON_BRACE_CLOSE DJ_COMMENT_CLOSE
+    ;
+
 jsonOverridingBlockName
     : DJ_BLOCK_NAME
     ;
 
+jsonIncludingTemplateName
+    : JSON_FIELD_STRING_VALUE
+    ;
+
 djangoOverriddenBlock
     : DJ_OPEN DJ_BLOCK_KEYWORD djangoOverriddenBlockName DJ_CLOSE htmlContent DJ_END_BLOCK
+    ;
+
+djangoIncludeTag
+    : DJ_OPEN DJ_INCLUDE_KEYWORD djangoIncludeFileNameWithQuotes DJ_CLOSE
     ;
 
 djangoBlock
@@ -146,6 +166,10 @@ djangoDefinedVariable
     | {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
     | {self._hasAtLeastOneForLoopVariable()}? djangoDefinedLoopVariable
     | {self._hasAtLeastOneCycleVariableDefined()}? djangoDefinedCycleVariable
+    ;
+
+djangoIncludeFileNameWithQuotes
+    : DJ_INCLUDE_FILENAME
     ;
 
 djangoDefinedLoopVariable

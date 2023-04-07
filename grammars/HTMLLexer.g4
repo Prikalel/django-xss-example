@@ -79,6 +79,10 @@ DJ_AS_KEYWORD
     : 'as '
     ;
 
+DJ_INCLUDE_KEYWORD
+    : 'include '
+    ;
+
 DJ_FOR_IN_KEYWORD
     : ' in '
     ;
@@ -101,6 +105,10 @@ DJ_VARIABLE
 
 DJ_VALUE
     : '"123"' | '"<script>alert(\'XSS\');</script>"'
+    ;
+
+DJ_INCLUDE_FILENAME
+    : '"./snippet.html"'
     ;
 
 DJ_END_WITH
@@ -157,6 +165,10 @@ JSON_FIELD_NAMED_NAME
 
 JSON_FIELD_VALUE_BLOCK
     : JSON_QUOTES 'block' JSON_QUOTES
+    ;
+
+JSON_FIELD_VALUE_INCLUDE
+    : JSON_QUOTES 'include' JSON_QUOTES
     ;
 
 JSON_FIELD_STRING_VALUE

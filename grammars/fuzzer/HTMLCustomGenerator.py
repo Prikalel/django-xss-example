@@ -27,6 +27,7 @@ class HTMLCustomGenerator(HTMLGenerator):
     django_block_names: List[str] = []  # Уникальные имена блоков.
     django_variables_block_stack: List[List[str]] = []  # Введённые через with-блоки переменные django.
     overridden_block_names = []  # Имена блоков для переопределения.
+    include_filename: str = ""  # Имя включаемого файла.
 
     # Очищение всего перед следующим тестом.
     def _flushState(self):
@@ -39,6 +40,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.django_block_names = []
         self.django_variables_block_stack = []
         self.overridden_block_names = []
+        self.include_filename = ""
 
     # Получение случайного значения для контекстной переменной django.
     def __getRandomStringValue(self):
@@ -193,6 +195,21 @@ class HTMLCustomGenerator(HTMLGenerator):
         current = UnparserRule(name='jsonOverridingBlockName', parent=parent)
         django_defined_name = self.overridden_block_names.pop()
         UnlexerRule(src=django_defined_name, parent=current)
+        return current
+    
+    # Имя включаемого файла.
+    def jsonIncludingTemplateName(self, parent=None):
+        current = UnparserRule(name='jsonIncludingTemplateName', parent=parent)
+        UnlexerRule(src=self.include_filename, parent=current)
+        self.include_filename = ""
+        return current
+
+    # Имя включаемого файла: генерация + сохранение.
+    def djangoIncludeFileNameWithQuotes(self, parent=None):
+        current = UnparserRule(name='djangoIncludeFileNameWithQuotes', parent=parent)
+        name_length = 10
+        self.include_filename = "./t_" + ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(name_length)) + ".html"
+        UnlexerRule(src='"' + self.include_filename + '"', parent=current)
         return current
 
     # Валидное имя атрибута.
