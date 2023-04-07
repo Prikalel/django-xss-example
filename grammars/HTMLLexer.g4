@@ -91,6 +91,10 @@ DJ_CYCLE_KEYWORD
     : 'cycle '
     ;
 
+DJ_FIRSTOF_KEYWORD
+    : 'firstof '
+    ;
+
 DJ_WITH_EQUALS
     : '='
     ;
@@ -100,7 +104,7 @@ DJ_SPACE
     ;
 
 DJ_VARIABLE
-    : 'var1' | 'var2' | 'var3'
+    : 'var1' | 'var2' | 'var3' | 'somename'
     ;
 
 DJ_VALUE

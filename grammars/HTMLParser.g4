@@ -69,6 +69,7 @@ django
     | djangoDebug
     | djangoTemplateTag
     | djangoNowTag
+    | djangoFirstOf
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
     | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
@@ -155,6 +156,15 @@ djangoCycleValue
 
 djangoWithVariables
     : djangoWithVariable DJ_WITH_EQUALS djangoWithVariableValue DJ_SPACE
+    ;
+
+djangoFirstOf
+    : DJ_OPEN DJ_FIRSTOF_KEYWORD (djangoFirstOfVariable DJ_SPACE)+ DJ_VALUE? DJ_CLOSE
+    ;
+
+djangoFirstOfVariable
+    : DJ_VARIABLE
+    | {self._hasAtLeastOneDefinedVariable()}? djangoDefinedVariable
     ;
 
 djangoVariable
