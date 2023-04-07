@@ -136,6 +136,18 @@ JSON_FIELD_NAME
     : 'name'
     ;
 
+JSON_FIELD_NAMED_TYPE
+    : JSON_QUOTES 'type' JSON_QUOTES
+    ;
+
+JSON_FIELD_NAMED_NAME
+    : JSON_QUOTES 'name' JSON_QUOTES
+    ;
+
+JSON_FIELD_VALUE_BLOCK
+    : JSON_QUOTES 'block' JSON_QUOTES
+    ;
+
 JSON_FIELD_STRING_VALUE
     : 'value'
     ;

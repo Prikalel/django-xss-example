@@ -48,7 +48,7 @@ class Driver:
         with open(template_filepath, "r") as text_file:
             strings = text_file.readlines()
 
-        searching_keyword = "cycle_var0|force_escape"
+        searching_keyword = " comment "
         result: bool = any(map(lambda s: s.count(searching_keyword), strings))
         if result:
             self.logger.warning("Found searching template file at: %s", template_filepath)

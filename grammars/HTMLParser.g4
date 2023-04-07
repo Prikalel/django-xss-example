@@ -47,8 +47,7 @@ def _hasAtLeastOneDefinedVariable(self) -> bool:
         self._hasAtLeastOneForLoopVariable() or
         self._hasAtLeastOneCycleVariableDefined())
 
-last_was_django_comment: bool = False
-last_was_django_block: bool = False
+is_in_comment_section: bool = False
 }
 
 htmlDocument
@@ -72,8 +71,8 @@ django
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
     | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
-    | {0.2 * (not self.last_was_django_block)}? {self.last_was_django_block = True} djangoBlock {self.last_was_django_block = False}
-    | {0.1 * (not self.last_was_django_comment)}? {self.last_was_django_comment = True} djangoComment {self.last_was_django_comment = False}
+    | djangoBlock
+    | {not self.is_in_comment_section}? djangoOverriddenBlock {self.is_in_comment_section = True} djangoCommentedOverridingBlock {self.is_in_comment_section = False}
     ;
 
 djangoDebug
@@ -84,8 +83,23 @@ djangoWith
     : {self._startOfDjangoWithBlock()} DJ_OPEN DJ_WITH_KEYWORD djangoWithVariables+ DJ_CLOSE htmlContent DJ_END_WITH {self._endOfDjangoWithBlock()}
     ;
 
-djangoComment
-    : DJ_START_COMMENT htmlContent DJ_END_COMMENT
+djangoCommentedOverridingBlock
+    : DJ_START_COMMENT djangoCommentedOverridingBlockInfo htmlElement+ DJ_END_COMMENT
+    ;
+
+djangoCommentedOverridingBlockInfo
+    : DJ_COMMENT_OPEN JSON_BRACE_OPEN 
+      JSON_FIELD_NAMED_TYPE JSON_COLON JSON_FIELD_VALUE_BLOCK JSON_COMMA 
+      JSON_FIELD_NAMED_NAME JSON_COLON JSON_QUOTES jsonOverridingBlockName JSON_QUOTES 
+      JSON_BRACE_CLOSE DJ_COMMENT_CLOSE
+    ;
+
+jsonOverridingBlockName
+    : DJ_BLOCK_NAME
+    ;
+
+djangoOverriddenBlock
+    : DJ_OPEN DJ_BLOCK_KEYWORD djangoOverriddenBlockName DJ_CLOSE htmlContent DJ_END_BLOCK
     ;
 
 djangoBlock
@@ -126,7 +140,7 @@ djangoDefinedVariable
     : {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
     | {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
     | {self._hasAtLeastOneForLoopVariable()}? djangoDefinedLoopVariable
-    | {5*self._hasAtLeastOneCycleVariableDefined()}? djangoDefinedCycleVariable
+    | {self._hasAtLeastOneCycleVariableDefined()}? djangoDefinedCycleVariable
     ;
 
 djangoDefinedLoopVariable
@@ -209,6 +223,10 @@ htmlAttributeName
 
 htmlAttributeValue
     : ATTVALUE_VALUE
+    ;
+
+djangoOverriddenBlockName
+    : DJ_BLOCK_NAME
     ;
 
 djangoBlockName

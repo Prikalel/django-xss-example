@@ -26,6 +26,7 @@ class HTMLCustomGenerator(HTMLGenerator):
     cycle_variables_stack = []  # Имена, которые используются для сохранения значения cycle внутри for-циклов.
     django_block_names: List[str] = []  # Уникальные имена блоков.
     django_variables_block_stack: List[List[str]] = []  # Введённые через with-блоки переменные django.
+    overridden_block_names = []  # Имена блоков для переопределения.
 
     # Очищение всего перед следующим тестом.
     def _flushState(self):
@@ -37,6 +38,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.cycle_variables_stack = []  
         self.django_block_names = []
         self.django_variables_block_stack = []
+        self.overridden_block_names = []
 
     # Получение случайного значения для контекстной переменной django.
     def __getRandomStringValue(self):
@@ -113,6 +115,19 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
+    # Уникальные имена блоков + сохранение в стэк имени, так как блок будет переопределён.
+    def djangoOverriddenBlockName(self, parent=None):
+        current = UnparserRule(name='djangoOverriddenBlockName', parent=parent)
+        name_length = 1
+        name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
+        while name in self.django_block_names:
+            name_length += 1
+            name = ''.join(random.choice(string.ascii_uppercase) for _ in range(name_length))
+        self.django_block_names.append(name)
+        self.overridden_block_names.append(name) # абсолютно такой же как djangoBlockName за исключением вот этой вот строчки.
+        UnlexerRule(src=name, parent=current)
+        return current
+
     # Сохранение имён переменных django + проверка, чтобы они были уникальными.
     def djangoWithVariable(self, parent=None):
         current = UnparserRule(name='djangoWithVariable', parent=parent)
@@ -171,6 +186,13 @@ class HTMLCustomGenerator(HTMLGenerator):
         current = UnparserRule(name='djangoDefinedLoopVariable', parent=parent)
         django_defined_variable_name = random.choice(self.for_variables_stack)
         UnlexerRule(src=django_defined_variable_name, parent=current)
+        return current
+
+    # Имя переопределяемого блока.
+    def jsonOverridingBlockName(self, parent=None):
+        current = UnparserRule(name='jsonOverridingBlockName', parent=parent)
+        django_defined_name = self.overridden_block_names.pop()
+        UnlexerRule(src=django_defined_name, parent=current)
         return current
 
     # Валидное имя атрибута.

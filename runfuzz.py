@@ -52,6 +52,7 @@ def check_test(num: int, d: Driver) -> bool:
         if not found:
             t = get_template(f'test_{i}.html')
             ctx = ContextLoader(template_filepath)
+            ctx.create_and_modify_files_if_need()
             with open(output_rendered_name, "w") as text_file:
                 text_file.write(t.render(ctx.get_context()))
             # if d.is_template_matched(template_filepath):
@@ -61,6 +62,7 @@ def check_test(num: int, d: Driver) -> bool:
                 logger.info("Found!!!")
                 continue
             bar.next()
+            ctx.remove_created_files()
         if os.path.exists(output_rendered_name):
             os.remove(output_rendered_name)
         os.remove(template_filepath)
