@@ -11,6 +11,7 @@ from djangocontext import ContextLoader
 from progress.bar import IncrementalBar
 from grammarinator.generate import *
 from multiprocessing import Pool
+from mylogger import setup_logger
 
 logger = logging.getLogger("Fuzzer")
 
@@ -25,23 +26,26 @@ def django_setup():
 
 
 def generate_tests(num: int, g: Generator):
-    jobs = os.cpu_count() # Number of threads to use.
-    generator = g
-    if jobs > 1:
-        with Pool(jobs) as pool:
-            for _ in pool.imap_unordered(generator, range(num)):
-                pass
-            pool.close()
-            pool.join()
-    else:
-        for i in range(num):
-            generator(i)
+    bar = IncrementalBar('Generate', max=num)
+    for i in range(num):
+        g(i)
+        bar.next()
+    bar.finish()
     return True
 
 
-def check_test(num: int, d: Driver) -> bool:  # true if found
+def check_test(num: int, d: Driver) -> bool:
+    """Проверяет тесты.
+
+    :param num: Кол-во тестов.
+    :type num: int
+    :param d: Драйвер проверки.
+    :type d: Driver
+    :return: True если нашёл.
+    :rtype: bool
+    """
     found: bool = False
-    bar = IncrementalBar('Countdown', max=num)
+    bar = IncrementalBar('Check', max=num)
     for i in range(num):
         template_filepath: str = f"./polls/templates/polls/test_{i}.html"
         output_rendered_name = f"./polls/templates/polls/rendered_test_{i}.html"
@@ -50,10 +54,10 @@ def check_test(num: int, d: Driver) -> bool:  # true if found
             ctx = ContextLoader(template_filepath)
             with open(output_rendered_name, "w") as text_file:
                 text_file.write(t.render(ctx.get_context()))
+            # if d.is_template_matched(template_filepath):
             if d.is_alert_present(output_rendered_name):
                 bar.finish()
                 found = True
-                logger.warning("XSS vulnerable example available at: %s", output_rendered_name)
                 logger.info("Found!!!")
                 continue
             bar.next()
@@ -94,16 +98,8 @@ def prepare_fuzzer():
     logger.debug('output: %s', result.stdout)
     logger.debug('error: %s', result.stderr)
 
-def setup_logger():
-    console_handler = logging.StreamHandler()
-    FORMAT = "%(asctime)s — %(name)s — %(levelname)s — %(message)s"
-    format = logging.Formatter(FORMAT, validate=True)
-    console_handler.setFormatter(format)
-    logger.addHandler(console_handler)
-    logger.setLevel(logging.DEBUG)
-
 
 if __name__ == "__main__":
-    setup_logger()
+    setup_logger(logger)
     prepare_fuzzer()
     run()
