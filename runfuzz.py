@@ -50,9 +50,9 @@ def check_test(num: int, d: Driver) -> bool:
         template_filepath: str = f"./polls/templates/polls/test_{i}.html"
         output_rendered_name = f"./polls/templates/polls/rendered_test_{i}.html"
         if not found:
-            t = get_template(f'test_{i}.html')
             ctx = ContextLoader(template_filepath)
             ctx.create_and_modify_files_if_need()
+            t = get_template(f'test_{i}.html')
             with open(output_rendered_name, "w") as text_file:
                 text_file.write(t.render(ctx.get_context()))
             # if d.is_template_matched(template_filepath):
@@ -77,7 +77,7 @@ def run():
     g = Generator(generator='grammars.fuzzer.HTMLCustomGenerator.HTMLCustomGenerator', rule='htmlDocument', out_format='/home/alex/Документы/django-example/polls/templates/polls/test_%d.html',
                   model='grammarinator.runtime.DefaultModel', max_depth=60, cleanup=False)
     django_setup()
-    num_of_tests = 100
+    num_of_tests = 20
     found: bool = False
 
     while not found:
@@ -101,7 +101,15 @@ def prepare_fuzzer():
     logger.debug('error: %s', result.stderr)
 
 
+def clear_directory():
+    templates_directory = "./polls/templates/polls"
+    only_files = [f for f in os.listdir(templates_directory) if os.path.isfile(os.path.join(templates_directory, f))]
+    for file in filter(lambda x: x.startswith("test_") or x.startswith("rendered_test_"), only_files):
+        logger.info("Found file from previous run: '%s'. Will be deleted!", file)
+        os.remove(os.path.join(templates_directory, file))
+
 if __name__ == "__main__":
     setup_logger(logger)
     prepare_fuzzer()
+    clear_directory()
     run()
