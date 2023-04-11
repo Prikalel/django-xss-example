@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 import random
 
@@ -24,6 +25,7 @@ class HTMLCustomGenerator(HTMLGenerator):
     tag_stack = []  # Валидные html-тэги и их атрибуты.
     for_variables_stack = []  # Имена переменных, которые используются в for-циклах.
     cycle_variables_stack = []  # Имена, которые используются для сохранения значения cycle внутри for-циклов.
+    cycle_variables_stack_backup = []  # Сохранённое значение cycle_variables_stack.
     django_block_names: List[str] = []  # Уникальные имена блоков.
     django_variables_block_stack: List[List[str]] = []  # Введённые через with-блоки переменные django.
     overridden_block_names = []  # Имена блоков для переопределения.
@@ -37,6 +39,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.tag_stack = [] 
         self.for_variables_stack = [] 
         self.cycle_variables_stack = []  
+        self.cycle_variables_stack_backup = []
         self.django_block_names = []
         self.django_variables_block_stack = []
         self.overridden_block_names = []
@@ -233,6 +236,18 @@ class HTMLCustomGenerator(HTMLGenerator):
     # Начало django блока with.
     def _startOfDjangoWithBlock(self):
         self.django_variables_block_stack.append([])
+
+    # Начало комментируемого блока.
+    def _startOfCommentedBlock(self):
+        self.is_in_comment_section = True
+        self.cycle_variables_stack_backup = deepcopy(self.cycle_variables_stack)
+        self.cycle_variables_stack = []
+
+    # Конец комментируемого блока.
+    def _endOfCommentedBlock(self):
+        self.is_in_comment_section = False
+        self.cycle_variables_stack = deepcopy(self.cycle_variables_stack_backup)
+        self.cycle_variables_stack_backup = []
 
     # Конец django блока with.
     def _endOfDjangoWithBlock(self):

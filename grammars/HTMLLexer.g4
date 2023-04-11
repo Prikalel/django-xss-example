@@ -91,6 +91,10 @@ DJ_CYCLE_KEYWORD
     : 'cycle '
     ;
 
+DJ_RESETCYCLE_KEYWORD
+    : 'resetcycle '
+    ;
+
 DJ_FIRSTOF_KEYWORD
     : 'firstof '
     ;

@@ -23,6 +23,12 @@ def _endOfDjangoForLoop(self):
 def _startOfDjangoWithBlock(self):
     pass
 
+def _startOfCommentedBlock(self):
+    pass
+
+def _endOfCommentedBlock(self):
+    pass
+
 def _flushState(self):
     pass
 
@@ -70,12 +76,13 @@ django
     | djangoTemplateTag
     | djangoNowTag
     | djangoFirstOf
+    | djangoBlock
+    | {self._hasAtLeastOneCycleVariableDefined()}? djangoResetCycle
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
     | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
-    | djangoBlock
-    | {not self.is_in_comment_section}? djangoIncludeTag {self.is_in_comment_section = True} djangoCommentedIncludingTemplate {self.is_in_comment_section = False}
-    | {not self.is_in_comment_section}? djangoOverriddenBlock {self.is_in_comment_section = True} djangoCommentedOverridingBlock {self.is_in_comment_section = False}
+    | {not self.is_in_comment_section}? djangoIncludeTag {self._startOfCommentedBlock()} djangoCommentedIncludingTemplate {self._endOfCommentedBlock()}
+    | {not self.is_in_comment_section}? djangoOverriddenBlock {self._startOfCommentedBlock()} djangoCommentedOverridingBlock {self._endOfCommentedBlock()}
     ;
 
 djangoDebug
@@ -142,6 +149,10 @@ djangoTemplateTag
 
 djangoForLoop
     : DJ_OPEN DJ_FOR_KEYWORD djangoForLoopVariableName DJ_FOR_IN_KEYWORD djangoDefinedContextListVariable DJ_CLOSE NEWLINE htmlContent NEWLINE DJ_END_FOR_LOOP {self._endOfDjangoForLoop()}
+    ;
+
+djangoResetCycle
+    : DJ_OPEN DJ_RESETCYCLE_KEYWORD djangoDefinedCycleVariable DJ_CLOSE
     ;
 
 djangoCycle
