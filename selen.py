@@ -7,6 +7,7 @@ from selenium.common.exceptions import UnexpectedAlertPresentException
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoAlertPresentException
 import os
+from djangocontext import ContextLoader
 from mylogger import setup_logger
 
 class Driver:
@@ -34,12 +35,14 @@ class Driver:
             self.logger.warning("UnexpectedAlertPresentException at: %s", relative_path)
             return True
 
-    def is_template_matched(self, template_filepath) -> bool:
+    def is_template_matched(self, template_filepath, ctx: ContextLoader) -> bool:
         """Возвращает True если файл шаблона соответствует искомому.
 
         Полезно, если надо проверить что грамматика может генерировать шаблоны
         определённой структуры.
         
+        :param ctx: Контекст рендера шаблона.
+        :type ctx: ContextLoader
         :param template_filepath: Путь до файла шаблона.
         :type template_filepath: str
         :rtype: bool
@@ -48,7 +51,11 @@ class Driver:
         with open(template_filepath, "r") as text_file:
             strings = text_file.readlines()
 
-        searching_keyword = " comment "
+        if ctx.have_any_created_files():
+            self.logger.warning("Found template file that have extra files created at: %s", template_filepath)
+            return True
+
+        searching_keyword = "debug"
         result: bool = any(map(lambda s: s.count(searching_keyword), strings))
         if result:
             self.logger.warning("Found searching template file at: %s", template_filepath)
