@@ -4,7 +4,7 @@ import logging
 import subprocess
 from django.conf import settings
 import django
-from django.template import Template, Context, loader
+from django.template import Template, Context, TemplateSyntaxError, loader
 from django.template.loader import get_template
 from selen import Driver
 from djangocontext import ContextLoader
@@ -53,10 +53,17 @@ def check_test(num: int, d: Driver) -> bool:
             ctx = ContextLoader(template_filepath)
             ctx.create_and_modify_files_if_need()
             t = get_template(f'test_{i}.html')
+            try:
+                rendered = t.render(ctx.get_context())
+            except TemplateSyntaxError as e:
+                logger.error(f"Error rendering template {i}, exception: %s", e)
+                bar.finish()
+                found = True
+                logger.error("Error while trying to found!!!")
+                continue
             with open(output_rendered_name, "w") as text_file:
-                text_file.write(t.render(ctx.get_context()))
-            # if d.is_template_matched(template_filepath):
-            if d.is_alert_present(output_rendered_name):
+                text_file.write(rendered)
+            if d.is_template_matched(template_filepath, ctx):
                 bar.finish()
                 found = True
                 logger.info("Found!!!")

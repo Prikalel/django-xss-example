@@ -120,7 +120,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         UnlexerRule(src=name, parent=current)
         return current
 
-    # Уникальные имена блоков + сохранение в стэк имени, так как блок будет переопределён.
+    # Уникальные имена блоков + сохранение в стек имени, так как блок будет переопределён.
     def djangoOverriddenBlockName(self, parent=None):
         current = UnparserRule(name='djangoOverriddenBlockName', parent=parent)
         name_length = 1
