@@ -44,8 +44,60 @@ DJ_COMMENT_CLOSE
     : ' #}'
     ;
 
+DJ_FILTER_KEYWORD
+    : 'filter '
+    ;
+
+DJ_END_FILTER
+    : 'endfilter'
+    ;
+
+DJ_FILTER_SIGN
+    : '|'
+    ;
+
 DJ_FORCE_ESCAPE_FILTER
-    : '|force_escape'
+    : 'force_escape'
+    ;
+
+DJ_LOWER_FILTER
+    : 'lower'
+    ;
+
+DJ_ADDSLASHES_FILTER
+    : 'addslashes'
+    ;
+
+DJ_CAPFIRST_FILTER
+    : 'capfirst'
+    ;
+
+DJ_CENTER_FILTER
+    : 'center:"1"'
+    | 'center:"2"'
+    | 'center:"3"'
+    ;
+
+DJ_CUT_FILTER
+    : 'cut:" "'
+    | 'cut:"a"'
+    | 'cut:":"'
+    ;
+
+DJ_LINEBREAKS_FILTER
+    : 'linebreaks'
+    ;
+
+DJ_LINEBREAKSSBR_FILTER
+    : 'linebreaksbr'
+    ;
+
+DJ_LINENUMBERS_FILTER
+    : 'linenumbers'
+    ;
+
+DJ_SLUGIFY_FILTER
+    : 'slugify'
     ;
 
 DJ_NOW

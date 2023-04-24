@@ -54,6 +54,7 @@ def _hasAtLeastOneDefinedVariable(self) -> bool:
         self._hasAtLeastOneCycleVariableDefined())
 
 is_in_comment_section: bool = False
+is_force_escaped: int = 0
 }
 
 htmlDocument
@@ -75,9 +76,10 @@ django
     | djangoDebug
     | djangoTemplateTag
     | djangoNowTag
-    | djangoFirstOf
     | djangoBlock
     | djangoAutoescape
+    | djangoFilter
+    | {self.is_force_escaped > 0 or self._hasAtLeastOneDefinedVariable()}? djangoFirstOf
     | {self._hasAtLeastOneCycleVariableDefined()}? djangoResetCycle
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
@@ -140,6 +142,11 @@ djangoAutoescape
     : DJ_OPEN DJ_AUTOESCAPE_ON DJ_CLOSE htmlContent DJ_OPEN DJ_END_AUTOESCAPE DJ_CLOSE
     ;
 
+djangoFilter
+    : {self.is_force_escaped += 1} DJ_OPEN DJ_FILTER_KEYWORD DJ_FORCE_ESCAPE_FILTER (DJ_FILTER_SIGN filter)* DJ_CLOSE htmlContent DJ_OPEN DJ_END_FILTER DJ_CLOSE {self.is_force_escaped -= 1}
+    | DJ_OPEN DJ_FILTER_KEYWORD filter (DJ_FILTER_SIGN filter)* DJ_CLOSE htmlContent DJ_OPEN DJ_END_FILTER DJ_CLOSE
+    ;
+
 djangoSpaceless
     : DJ_START_SPACELESS htmlContent DJ_END_SPACELESS
     ;
@@ -179,12 +186,13 @@ djangoFirstOf
     ;
 
 djangoFirstOfVariable
-    : DJ_VARIABLE
+    : {self.is_force_escaped > 0}? DJ_VARIABLE
     | {self._hasAtLeastOneDefinedVariable()}? djangoDefinedVariable
     ;
 
 djangoVariable
-    : DJ_VARIABLE_OPEN djangoDefinedVariable DJ_FORCE_ESCAPE_FILTER DJ_VARIABLE_CLOSE
+    : {self.is_force_escaped == 0}? DJ_VARIABLE_OPEN djangoDefinedVariable DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER (DJ_FILTER_SIGN filter)* DJ_VARIABLE_CLOSE
+    | {self.is_force_escaped > 0}? DJ_VARIABLE_OPEN djangoDefinedVariable (DJ_FILTER_SIGN (filter|DJ_FORCE_ESCAPE_FILTER))* DJ_VARIABLE_CLOSE
     ;
 
 djangoDefinedVariable
@@ -270,6 +278,18 @@ jsonStringValue
 
 jsonListValue
     : JSON_FIELD_LIST_VALUE
+    ;
+
+filter
+    : DJ_LOWER_FILTER
+    | DJ_ADDSLASHES_FILTER
+    | DJ_CAPFIRST_FILTER
+    | DJ_CENTER_FILTER
+    | DJ_CUT_FILTER
+    | DJ_LINEBREAKS_FILTER
+    | DJ_LINEBREAKSSBR_FILTER
+    | DJ_LINENUMBERS_FILTER
+    | DJ_SLUGIFY_FILTER
     ;
 
 htmlAttributeName
