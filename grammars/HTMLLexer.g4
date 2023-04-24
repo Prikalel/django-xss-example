@@ -95,6 +95,14 @@ DJ_RESETCYCLE_KEYWORD
     : 'resetcycle '
     ;
 
+DJ_AUTOESCAPE_ON
+    : 'autoescape on'
+    ;
+
+DJ_END_AUTOESCAPE
+    : 'endautoescape'
+    ;
+
 DJ_FIRSTOF_KEYWORD
     : 'firstof '
     ;

@@ -77,6 +77,7 @@ django
     | djangoNowTag
     | djangoFirstOf
     | djangoBlock
+    | djangoAutoescape
     | {self._hasAtLeastOneCycleVariableDefined()}? djangoResetCycle
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
@@ -133,6 +134,10 @@ djangoIncludeTag
 
 djangoBlock
     : DJ_OPEN DJ_BLOCK_KEYWORD djangoBlockName DJ_CLOSE htmlContent DJ_END_BLOCK
+    ;
+
+djangoAutoescape
+    : DJ_OPEN DJ_AUTOESCAPE_ON DJ_CLOSE htmlContent DJ_OPEN DJ_END_AUTOESCAPE DJ_CLOSE
     ;
 
 djangoSpaceless
