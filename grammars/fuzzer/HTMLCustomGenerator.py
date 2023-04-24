@@ -44,6 +44,8 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.django_variables_block_stack = []
         self.overridden_block_names = []
         self.include_filename = ""
+        self.is_in_comment_section = False
+        self.is_force_escaped = 0
 
     # Получение случайного значения для контекстной переменной django.
     def __getRandomStringValue(self):
@@ -176,6 +178,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         current = UnparserRule(name='djangoCycleVariableName', parent=parent)
         name = 'cycle_var' + str(sum(map(len, self.cycle_variables_stack)))
         UnlexerRule(src=name, parent=current)
+        assert len(self.cycle_variables_stack) == len(self.for_variables_stack)
         self.cycle_variables_stack[-1].append(name)
         return current
 
@@ -241,7 +244,7 @@ class HTMLCustomGenerator(HTMLGenerator):
     def _startOfCommentedBlock(self):
         self.is_in_comment_section = True
         self.cycle_variables_stack_backup = deepcopy(self.cycle_variables_stack)
-        self.cycle_variables_stack = []
+        self.cycle_variables_stack = [[] for _ in self.for_variables_stack]
 
     # Конец комментируемого блока.
     def _endOfCommentedBlock(self):
