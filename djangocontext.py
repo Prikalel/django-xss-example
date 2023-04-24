@@ -98,3 +98,6 @@ class ContextLoader:
             if os.path.exists(filename):
                 self.logger.info("Deleting included file %s...", filename)
                 os.remove(filename)
+
+    def have_any_created_files(self) -> bool:
+        return (self.base_file_relative_path is not None and os.path.exists(self.base_file_relative_path)) or len(self.created_included_files) > 0
