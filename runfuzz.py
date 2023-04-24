@@ -25,18 +25,20 @@ def django_setup():
     django.setup()
 
 
-def generate_tests(num: int, g: Generator):
+def generate_tests(total_tests: int, num: int, g: Generator):
     bar = IncrementalBar('Generate', max=num)
-    for i in range(num):
+    for i in range(total_tests, total_tests + num):
         g(i)
         bar.next()
     bar.finish()
     return True
 
 
-def check_test(num: int, d: Driver) -> bool:
+def check_test(total_tests: int, num: int, d: Driver) -> bool:
     """Проверяет тесты.
 
+    :param total_tests: Суммарное число тестов не включая новые num тестов.
+    :type total_tests: int
     :param num: Кол-во тестов.
     :type num: int
     :param d: Драйвер проверки.
@@ -46,7 +48,7 @@ def check_test(num: int, d: Driver) -> bool:
     """
     found: bool = False
     bar = IncrementalBar('Check', max=num)
-    for i in range(num):
+    for i in range(total_tests, total_tests + num):
         template_filepath: str = f"./polls/templates/polls/test_{i}.html"
         output_rendered_name = f"./polls/templates/polls/rendered_test_{i}.html"
         if not found:
@@ -63,7 +65,7 @@ def check_test(num: int, d: Driver) -> bool:
                 continue
             with open(output_rendered_name, "w") as text_file:
                 text_file.write(rendered)
-            if d.is_template_matched(template_filepath, ctx):
+            if not d.is_template_matched(template_filepath, ctx) and d.is_alert_present(output_rendered_name):
                 bar.finish()
                 found = True
                 logger.info("Found!!!")
@@ -84,15 +86,19 @@ def run():
     g = Generator(generator='grammars.fuzzer.HTMLCustomGenerator.HTMLCustomGenerator', rule='htmlDocument', out_format='/home/alex/Документы/django-example/polls/templates/polls/test_%d.html',
                   model='grammarinator.runtime.DefaultModel', max_depth=60, cleanup=False)
     django_setup()
-    num_of_tests = 20
+    num_of_tests: int = 20
+    total_tests: int = 0
     found: bool = False
 
     while not found:
         logger.info("Creating new pool...")
-        generate_tests(num_of_tests, g)
-        found = check_test(num_of_tests, d)
+        generate_tests(total_tests, num_of_tests, g)
+        found = check_test(total_tests, num_of_tests, d)
         if not found:
             logger.info(f"Not found. Have run {num_of_tests} tests...")
+            total_tests += num_of_tests
+    
+    logger.info(f"Found in less than {total_tests + num_of_tests} tests!")
 
 def prepare_fuzzer():
     logger.info("Preparing fuzzer for generating tests...")
