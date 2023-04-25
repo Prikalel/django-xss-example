@@ -4,16 +4,15 @@ import logging
 import subprocess
 from django.conf import settings
 import django
-from django.template import Template, Context, TemplateSyntaxError, loader
+from django.template import Template, TemplateSyntaxError
 from django.template.loader import get_template
 from selen import Driver
 from djangocontext import ContextLoader
 from progress.bar import IncrementalBar
 from grammarinator.generate import *
-from multiprocessing import Pool
-from mylogger import setup_logger
+from mylogger import LoggersSetup
 
-logger = logging.getLogger("Fuzzer")
+logger = logging.getLogger("runfuzz")
 
 def django_setup():
     settings.configure(TEMPLATES=[
@@ -54,7 +53,7 @@ def check_test(total_tests: int, num: int, d: Driver) -> bool:
         if not found:
             ctx = ContextLoader(template_filepath)
             ctx.create_and_modify_files_if_need()
-            t = get_template(f'test_{i}.html')
+            t: Template = get_template(f'test_{i}.html')
             try:
                 rendered = t.render(ctx.get_context())
             except TemplateSyntaxError as e:
@@ -95,8 +94,8 @@ def run():
         generate_tests(total_tests, num_of_tests, g)
         found = check_test(total_tests, num_of_tests, d)
         if not found:
-            logger.info(f"Not found. Have run {num_of_tests} tests...")
             total_tests += num_of_tests
+            logger.info(f"Not found. Have run {total_tests} tests...")
     
     logger.info(f"Found in less than {total_tests + num_of_tests} tests!")
 
@@ -122,8 +121,7 @@ def clear_directory():
         os.remove(os.path.join(templates_directory, file))
 
 if __name__ == "__main__":
-    setup_logger(logger)
-    setup_logger(logging.getLogger("ContextLoader"), logging.WARNING)
+    LoggersSetup.setup_all()
     prepare_fuzzer()
     clear_directory()
     run()

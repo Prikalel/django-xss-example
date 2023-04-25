@@ -8,31 +8,29 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoAlertPresentException
 import os
 from djangocontext import ContextLoader
-from mylogger import setup_logger
+
+logger = logging.getLogger(__name__)
 
 class Driver:
-    logger = logging.getLogger("Driver")
-
     def __init__(self):
-        setup_logger(self.logger, logging.INFO, "\n")
         self.driver = wd.Chrome(ChromeDriverManager().install())
         self.wait = WebDriverWait(self.driver, 15)
 
     def is_alert_present(self, relative_path):
         full_path = os.path.abspath(relative_path)
-        self.logger.debug("Testing rendered html at path %s.", full_path)
+        logger.debug("Testing rendered html at path %s.", full_path)
         try:
             self.driver.get(f"file://{full_path}")
             try:
                 alert = self.driver.switch_to.alert
                 if alert is None:
                     return False
-                self.logger.warning("Found alert at: %s", relative_path)
+                logger.warning("Found alert at: %s", relative_path)
                 return True
             except NoAlertPresentException:
                 return False
         except UnexpectedAlertPresentException:
-            self.logger.warning("UnexpectedAlertPresentException at: %s", relative_path)
+            logger.warning("UnexpectedAlertPresentException at: %s", relative_path)
             return True
 
     def is_template_matched(self, template_filepath, ctx: ContextLoader) -> bool:
@@ -52,11 +50,11 @@ class Driver:
             strings = text_file.readlines()
 
         if ctx.have_any_created_files():
-            self.logger.warning("Found template file that have extra files created at: %s", template_filepath)
+            logger.warning("Found template file that have extra files created at: %s", template_filepath)
             return True
 
         searching_keyword = "debug"
         result: bool = any(map(lambda s: s.count(searching_keyword), strings))
         if result:
-            self.logger.warning("Found searching template file at: %s", template_filepath)
+            logger.warning("Found searching template file at: %s", template_filepath)
         return result

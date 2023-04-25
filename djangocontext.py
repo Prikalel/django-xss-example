@@ -3,7 +3,8 @@ from logging import Logger
 import logging
 import os
 from typing import List
-from mylogger import setup_logger
+
+logger: Logger = logging.getLogger(__name__)
 
 class CommentSection:
     inner: str
@@ -23,7 +24,6 @@ class CommentSection:
         return self.type == "include"
 
 class ContextLoader:
-    logger: Logger = logging.getLogger("ContextLoader")
     ctx_json_data: str
     text: str
     template_relative_path: str
@@ -43,7 +43,7 @@ class ContextLoader:
                 self.ctx_json_data = text_file.readline().strip().removeprefix("{#").removesuffix("#}")
                 self.text = text_file.read()
         else:
-            self.logger.error("No file passed!")
+            logger.error("No file passed!")
 
     def get_context(self) -> dict:
         return json.loads(self.ctx_json_data)
@@ -66,7 +66,7 @@ class ContextLoader:
     def create_and_modify_files_if_need(self):
         sections = self.get_sections()
         if any(map(lambda x: x.isBlock(), sections)):
-            self.logger.info("Modifying file %s as it contains blocks overriding.", self.template_relative_path)
+            logger.info("Modifying file %s as it contains blocks overriding.", self.template_relative_path)
             filename_without_extension = self.template_relative_path.removesuffix(".html")
             self.base_file_relative_path = filename_without_extension + "_base.html"
             os.rename(self.template_relative_path, self.base_file_relative_path)
@@ -74,29 +74,29 @@ class ContextLoader:
                 base_filename = os.path.basename(self.base_file_relative_path)
                 text_file.write("{% extends \"./" + base_filename + "\" %}\n\n")
                 for section in filter(lambda x: x.isBlock(), sections):
-                    self.logger.debug("Writing block '%s'.", section.name)
+                    logger.debug("Writing block '%s'.", section.name)
                     text_file.write("{% block " + section.name + " %}\n")
                     text_file.write(os.linesep.join([s for s in section.inner.splitlines() if s]) + "\n")
                     text_file.write("{% endblock %}\n\n\n")
         if any(map(lambda x: x.isInclude(), sections)):
-            self.logger.info("Creating files for %s as it contains include keywords.", self.template_relative_path)
+            logger.info("Creating files for %s as it contains include keywords.", self.template_relative_path)
             dirpath_to_create_files = os.path.dirname(os.path.abspath(self.template_relative_path))
-            self.logger.info("Will create files in %s directory.", dirpath_to_create_files)
+            logger.info("Will create files in %s directory.", dirpath_to_create_files)
             for section in filter(lambda x: x.isInclude(), sections):
                 new_filepath = os.path.join(dirpath_to_create_files, section.name)
                 with open(new_filepath, "w") as text_file:
-                    self.logger.debug("Writing file '%s'.", section.name)
+                    logger.debug("Writing file '%s'.", section.name)
                     text_file.write(os.linesep.join([s for s in section.inner.splitlines() if s]) + "\n")
                 self.created_included_files.append(new_filepath)
-                self.logger.info("Saved for future deletion %s.", new_filepath)
+                logger.info("Saved for future deletion %s.", new_filepath)
 
     def remove_created_files(self):
         if self.base_file_relative_path is not None and os.path.exists(self.base_file_relative_path):
-            self.logger.info("Deleting base file %s...", self.base_file_relative_path)
+            logger.info("Deleting base file %s...", self.base_file_relative_path)
             os.remove(self.base_file_relative_path)
         for filename in self.created_included_files:
             if os.path.exists(filename):
-                self.logger.info("Deleting included file %s...", filename)
+                logger.info("Deleting included file %s...", filename)
                 os.remove(filename)
 
     def have_any_created_files(self) -> bool:
