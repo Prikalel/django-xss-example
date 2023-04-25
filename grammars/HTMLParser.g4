@@ -47,14 +47,15 @@ def _hasAtLeastOneContextListVariableDefined(self) -> bool:
 def _hasAtLeastOneCycleVariableDefined(self) -> bool:
     return False
 
-def _hasAtLeastOneDefinedVariable(self) -> bool:
+def _hasAtLeastOneDefinedVariable(self, check_for_with_variables: bool = True) -> bool:
     return (self._hasAtLeastOneContextStringVariableDefined() or 
-        self._hasAtLeastOneWithVariableDefined() or 
+        (check_for_with_variables and self._hasAtLeastOneWithVariableDefined()) or 
         self._hasAtLeastOneForLoopVariable() or
         self._hasAtLeastOneCycleVariableDefined())
 
 is_in_comment_section: bool = False
 is_force_escaped: int = 0
+allow_with_variable_using: bool = True
 }
 
 htmlDocument
@@ -79,7 +80,7 @@ django
     | djangoBlock
     | djangoAutoescape
     | djangoFilter
-    | {self.is_force_escaped > 0 or self._hasAtLeastOneDefinedVariable()}? djangoFirstOf
+    | {self.is_force_escaped > 0 or self._hasAtLeastOneDefinedVariable(check_for_with_variables=self.is_force_escaped > 0)}? djangoFirstOf
     | {self._hasAtLeastOneCycleVariableDefined()}? djangoResetCycle
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
@@ -187,7 +188,7 @@ djangoFirstOf
 
 djangoFirstOfVariable
     : {self.is_force_escaped > 0}? DJ_VARIABLE
-    | {self._hasAtLeastOneDefinedVariable()}? djangoDefinedVariable
+    | {self._hasAtLeastOneDefinedVariable(check_for_with_variables=self.is_force_escaped > 0)}? {self.allow_with_variable_using = self.is_force_escaped > 0} djangoDefinedVariable {self.allow_with_variable_using = True}
     ;
 
 djangoVariable
@@ -196,7 +197,7 @@ djangoVariable
     ;
 
 djangoDefinedVariable
-    : {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
+    : {self._hasAtLeastOneWithVariableDefined() and self.allow_with_variable_using}? djangoDefinedWithVariable
     | {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
     | {self._hasAtLeastOneForLoopVariable()}? djangoDefinedLoopVariable
     | {self._hasAtLeastOneCycleVariableDefined()}? djangoDefinedCycleVariable

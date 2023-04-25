@@ -46,6 +46,7 @@ class HTMLCustomGenerator(HTMLGenerator):
         self.include_filename = ""
         self.is_in_comment_section = False
         self.is_force_escaped = 0
+        self.allow_with_variable_using = True
 
     # Получение случайного значения для контекстной переменной django.
     def __getRandomStringValue(self):
