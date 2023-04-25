@@ -147,3 +147,6 @@ polls/templates/polls/rendered_test*.html
 
 # chrome
 chromedriver
+
+# log
+log.txt
