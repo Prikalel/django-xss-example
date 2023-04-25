@@ -37,7 +37,7 @@ class LoggersSetup:
     def __setup_logger(logger: logging.Logger, override_console_level):
         """Устанавливает базовые настройки логгера."""
         logger.setLevel(logging.DEBUG)
-        # logger.addHandler(LoggersSetup.__get_file_handler()) <- uncomment to log to file.
+        # logger.addHandler(LoggersSetup.__get_file_handler()) #<- uncomment to log to file / comment to disable.
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(logging.Formatter(LoggersSetup.FORMAT, validate=True))
         console_handler.setLevel(override_console_level or LoggersSetup.console_default_level)
