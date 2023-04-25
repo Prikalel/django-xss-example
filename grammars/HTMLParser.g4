@@ -53,6 +53,11 @@ def _hasAtLeastOneDefinedVariable(self, check_for_with_variables: bool = True) -
         self._hasAtLeastOneForLoopVariable() or
         self._hasAtLeastOneCycleVariableDefined())
 
+def _canUseCycle(self) -> bool:
+    return self._hasAtLeastOneForLoopVariable() and (self._hasAtLeastOneContextStringVariableDefined() or 
+        self._hasAtLeastOneWithVariableDefined() or
+        self.is_force_escaped > 0)
+
 is_in_comment_section: bool = False
 is_force_escaped: int = 0
 allow_with_variable_using: bool = True
@@ -83,10 +88,10 @@ django
     | {self.is_force_escaped > 0 or self._hasAtLeastOneDefinedVariable(check_for_with_variables=self.is_force_escaped > 0)}? djangoFirstOf
     | {self._hasAtLeastOneCycleVariableDefined()}? djangoResetCycle
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
-    | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
+    | {self._canUseCycle()}? djangoCycle
     | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
-    | {not self.is_in_comment_section}? djangoIncludeTag {self._startOfCommentedBlock()} djangoCommentedIncludingTemplate {self._endOfCommentedBlock()}
-    | {not self.is_in_comment_section}? djangoOverriddenBlock {self._startOfCommentedBlock()} djangoCommentedOverridingBlock {self._endOfCommentedBlock()}
+  //  | {not self.is_in_comment_section}? djangoIncludeTag {self._startOfCommentedBlock()} djangoCommentedIncludingTemplate {self._endOfCommentedBlock()}
+  //  | {not self.is_in_comment_section}? djangoOverriddenBlock {self._startOfCommentedBlock()} djangoCommentedOverridingBlock {self._endOfCommentedBlock()}
     ;
 
 djangoDebug
@@ -169,13 +174,14 @@ djangoResetCycle
     ;
 
 djangoCycle
-    : DJ_OPEN DJ_CYCLE_KEYWORD djangoCycleValue DJ_SPACE (djangoCycleValue DJ_SPACE)+ (DJ_AS_KEYWORD djangoCycleVariableName)? DJ_CLOSE
+    : DJ_OPEN DJ_CYCLE_KEYWORD djangoCycleValue (DJ_FILTER_SIGN filter)* DJ_SPACE (djangoCycleValue (DJ_FILTER_SIGN filter)* DJ_SPACE)+ (DJ_AS_KEYWORD djangoCycleVariableName)? DJ_CLOSE
     ;
 
 djangoCycleValue
     : {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
-    | {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
-    | djangoCycleStringValue
+    | {self.is_force_escaped > 0 and self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable
+    | {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER
+    | {self.is_force_escaped > 0}? djangoCycleStringValue
     ;
 
 djangoWithVariables
@@ -183,7 +189,7 @@ djangoWithVariables
     ;
 
 djangoFirstOf
-    : DJ_OPEN DJ_FIRSTOF_KEYWORD (djangoFirstOfVariable DJ_SPACE)+ DJ_VALUE? DJ_CLOSE
+    : DJ_OPEN DJ_FIRSTOF_KEYWORD (djangoFirstOfVariable (DJ_FILTER_SIGN filter)* DJ_SPACE)+ DJ_VALUE? DJ_CLOSE
     ;
 
 djangoFirstOfVariable
