@@ -64,6 +64,10 @@ DJ_LOWER_FILTER
     : 'lower'
     ;
 
+DJ_UPPER_FILTER
+    : 'upper'
+    ;
+
 DJ_ADDSLASHES_FILTER
     : 'addslashes'
     ;
@@ -98,6 +102,77 @@ DJ_LINENUMBERS_FILTER
 
 DJ_SLUGIFY_FILTER
     : 'slugify'
+    ;
+
+DJ_TITLE_FILTER
+    : 'title'
+    ;
+
+DJ_WORDCOUNT_FILTER
+    : 'wordcount'
+    ;
+
+DJ_WORDWRAP_FILTER
+    : 'wordwrap:5'
+    | 'wordwrap:10'
+    | 'wordwrap:1'
+    ;
+
+DJ_TRUNCATE_FILTER
+    : 'truncatechars:7'
+    | 'truncatechars:1'
+    | 'truncatechars:20'
+    | 'truncatechars_html:7'
+    | 'truncatechars_html:1'
+    | 'truncatechars_html:20'
+    | 'truncatewords:2'
+    | 'truncatewords:1'
+    | 'truncatewords:5'
+    | 'truncatewords_html:2'
+    | 'truncatewords_html:1'
+    | 'truncatewords_html:5'
+    ;
+
+DJ_SCRIPTAGS_FILTER
+    : 'striptags'
+    ;
+
+DJ_LJUST_FILTER
+    : 'ljust:"10"'
+    | 'ljust:"20"'
+    | 'ljust:"1"'
+    ;
+
+DJ_RJUST_FILTER
+    : 'rjust:"10"'
+    | 'rjust:"20"'
+    | 'rjust:"1"'
+    ;
+
+DJ_MAKE_LIST_FILTER
+    : 'make_list'
+    ;
+
+DJ_LENGTH_FILTER
+    : 'length'
+    ;
+
+DJ_FIRST_FILTER_FROM_LIST
+    : 'first'
+    ;
+
+DJ_LAST_FILTER_FROM_LIST
+    : 'last'
+    ;
+
+DJ_RANDOM_FILTER_FROM_LIST
+    : 'random'
+    ;
+
+DJ_JOIN_FILTER_FROM_LIST
+    : 'join:" "'
+    | 'join:","'
+    | 'join:"  //  "'
     ;
 
 DJ_NOW
