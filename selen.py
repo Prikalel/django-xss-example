@@ -49,9 +49,13 @@ class Driver:
         with open(template_filepath, "r") as text_file:
             strings = text_file.readlines()
 
-        if ctx.have_any_created_files():
-            logger.warning("Found template file that have extra files created at: %s", template_filepath)
-            return True
+        if ctx.base_file_relative_path is not None and os.path.exists(ctx.base_file_relative_path):
+            with open(ctx.base_file_relative_path, "r") as text_file:
+                strings += text_file.readlines()
+        if ctx.created_included_files is not None:
+            for included_file in filter(lambda x: os.path.exists(x), ctx.created_included_files):
+                with open(included_file, "r") as text_file:
+                    strings += text_file.readlines()
 
         searching_keyword = "debug"
         result: bool = any(map(lambda s: s.count(searching_keyword), strings))
