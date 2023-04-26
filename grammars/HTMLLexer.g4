@@ -183,6 +183,16 @@ DJ_JOIN_FILTER_FROM_LIST
     | 'join:"  //  "'
     ;
 
+DJ_SLICE_FILTER_FROM_LIST_TO_LIST
+    : 'slice:":2"'
+    | 'slice:"-2:"'
+    | 'slice:"1:3"'
+    | 'slice:"1:-1"'
+    | 'slice:"0:3"'
+    | 'slice:"3:"'
+    | 'slice:":"'
+    ;
+
 DJ_STRINGFORMAT_INT_TO_STRING_FILTER
     : 'stringformat:"i"'
     ;
