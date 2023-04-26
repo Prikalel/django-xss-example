@@ -36,3 +36,23 @@ ls # Here is your files.
 python -m http.server # start the server
 ```
 
+### Patch
+
+To work on you need a django 4.0.1 with patched `random` tag:
+
+```diff
+--- /home/alex/.local/lib/python3.9/site-packages/django/template/defaultfilters.py     2023-04-26 12:47:44.387239988 +0300
++++ /home/alex/.local/lib/python3.9/site-packages/django/template/defaultfilters-fixed.py       2023-04-26 12:47:33.931039539 +0300
+@@ -613,7 +613,10 @@
+ @register.filter(is_safe=True)
+ def random(value):
+     """Return a random item from the list."""
+-    return random_module.choice(value)
++    try:
++        return random_module.choice(value)
++    except IndexError:
++        return ''
+ 
+ 
+ @register.filter("slice", is_safe=True)
+```
