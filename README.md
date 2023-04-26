@@ -56,3 +56,8 @@ To work on you need a django 4.0.1 with patched `random` tag:
  
  @register.filter("slice", is_safe=True)
 ```
+
+### Found a bug - default settings
+
+1) Bug with escape filter - less than 2340 tests.
+2) Bug with `debug` tag - less than 20 tests.
