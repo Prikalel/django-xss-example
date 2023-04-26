@@ -325,7 +325,6 @@ listToSingleFilter
 
 escapingFilter
     : DJ_FORCE_ESCAPE_FILTER
-    | DJ_ESCAPE_FILTER
     | DJ_SCRIPTAGS_FILTER
     ;
 
