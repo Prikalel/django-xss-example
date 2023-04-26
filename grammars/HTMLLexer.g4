@@ -206,6 +206,10 @@ DJ_FOR_KEYWORD
     : 'for '
     ;
 
+DJ_EMPTY_KEYWORD
+    : 'empty'
+    ;
+
 DJ_AS_KEYWORD
     : 'as '
     ;
@@ -242,12 +246,20 @@ DJ_WITH_EQUALS
     : '='
     ;
 
+DJ_EMPTY_FOR_LOOP
+    : DJ_OPEN DJ_EMPTY_KEYWORD DJ_CLOSE
+    ;
+
 DJ_SPACE
     : ' '
     ;
 
 DJ_VARIABLE
     : 'var1' | 'var2' | 'var3' | 'somename'
+    ;
+
+DJ_UNDEFINED_LIST_VARIABLE
+    : 'list_var_a' | 'list_var_b' | 'list_var_c'
     ;
 
 DJ_VALUE

@@ -82,6 +82,7 @@ django
     | djangoAutoescape
     | djangoFilter
     | djangoFirstOf
+    | djangoForEmptyLoop
     | {self._hasAtLeastOneCycleVariableDefined()}? djangoResetCycle
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._hasAtLeastOneForLoopVariable()}? djangoCycle
@@ -165,6 +166,11 @@ djangoForLoop
     : DJ_OPEN DJ_FOR_KEYWORD djangoForLoopVariableName DJ_FOR_IN_KEYWORD djangoDefinedContextListVariable DJ_CLOSE NEWLINE htmlContent NEWLINE DJ_END_FOR_LOOP {self._endOfDjangoForLoop()}
     ;
 
+djangoForEmptyLoop
+    : {self._hasAtLeastOneContextListVariableDefined()}? DJ_OPEN DJ_FOR_KEYWORD djangoForLoopVariableName DJ_FOR_IN_KEYWORD djangoDefinedContextListVariable DJ_CLOSE htmlContent DJ_EMPTY_FOR_LOOP {self._endOfDjangoForLoop()} htmlContent DJ_END_FOR_LOOP
+    | DJ_OPEN DJ_FOR_KEYWORD DJ_VARIABLE DJ_FOR_IN_KEYWORD undefinedListVariable DJ_CLOSE htmlContent DJ_EMPTY_FOR_LOOP htmlContent DJ_END_FOR_LOOP
+    ;
+
 djangoResetCycle
     : DJ_OPEN DJ_RESETCYCLE_KEYWORD djangoDefinedCycleVariable DJ_CLOSE
     ;
@@ -178,12 +184,17 @@ djangoWithVariables
     ;
 
 djangoFirstOf
-    : DJ_OPEN DJ_FIRSTOF_KEYWORD (djangoEscapedVariable (DJ_FILTER_SIGN filter)* DJ_SPACE)+ DJ_VALUE? DJ_CLOSE
+    : DJ_OPEN DJ_FIRSTOF_KEYWORD (djangoFirstOfVariable (DJ_FILTER_SIGN filter)* DJ_SPACE)+ DJ_CLOSE
+    ;
+
+djangoFirstOfVariable
+    : djangoEscapedVariable
+    | DJ_VARIABLE
     ;
 
 djangoEscapedVariable
-    : {self.is_force_escaped > 0}? DJ_VARIABLE
-    | DJ_VARIABLE DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER
+    : {self.is_force_escaped > 0}? DJ_VALUE
+    | DJ_VALUE DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER
     | {self._hasAtLeastOneDefinedVariable(check_for_with_variables=self.is_force_escaped > 0)}? {self.allow_with_variable_using = self.is_force_escaped > 0} djangoDefinedVariable {self.allow_with_variable_using = True}
     | {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER
     ;
@@ -239,7 +250,12 @@ djangoWithVariable
 
 djangoWithVariableValue
     : {self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
+    | {self._hasAtLeastOneContextListVariableDefined()}? djangoDefinedContextListVariable DJ_FILTER_SIGN listToSingleFilter
     | DJ_VALUE
+    ;
+
+undefinedListVariable
+    : DJ_UNDEFINED_LIST_VARIABLE
     ;
 
 htmlContent
