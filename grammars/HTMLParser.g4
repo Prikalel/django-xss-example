@@ -76,7 +76,7 @@ htmlElement
 django
     : djangoSpaceless
     | djangoWith
-    //| djangoDebug
+    | djangoDebug // TODO: remove
     | djangoTemplateTag
     | djangoNowTag
     | djangoBlock

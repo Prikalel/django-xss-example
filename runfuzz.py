@@ -64,7 +64,7 @@ def check_test(total_tests: int, num: int, d: Driver) -> bool:
                 continue
             with open(output_rendered_name, "w") as text_file:
                 text_file.write(rendered)
-            if not d.is_template_matched(template_filepath, ctx) and d.is_alert_present(output_rendered_name):
+            if d.is_alert_present(output_rendered_name):
                 bar.finish()
                 found = True
                 logger.info("Found!!!")
