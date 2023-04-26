@@ -175,6 +175,10 @@ DJ_JOIN_FILTER_FROM_LIST
     | 'join:"  //  "'
     ;
 
+DJ_STRINGFORMAT_INT_TO_STRING_FILTER
+    : 'stringformat:"i"'
+    ;
+
 DJ_NOW
     : 'now '
     ;
