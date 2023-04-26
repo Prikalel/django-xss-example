@@ -252,6 +252,10 @@ DJ_AUTOESCAPE_ON
     : 'autoescape on'
     ;
 
+DJ_AUTOESCAPE_OFF
+    : 'autoescape off'
+    ;
+
 DJ_END_AUTOESCAPE
     : 'endautoescape'
     ;
@@ -273,7 +277,7 @@ DJ_SPACE
     ;
 
 DJ_VARIABLE
-    : 'var1' | 'var2' | 'var3' | 'somename'
+    : 'var_a' | 'var_b' | 'var_c' | 'somename'
     ;
 
 DJ_UNDEFINED_LIST_VARIABLE
