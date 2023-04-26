@@ -56,9 +56,9 @@ def check_test(total_tests: int, num: int, d: Driver) -> bool:
             t: Template = get_template(f'test_{i}.html')
             try:
                 rendered = t.render(ctx.get_context())
-            except TemplateSyntaxError as e:
-                logger.error(f"Error rendering template {i}, exception: %s", e)
+            except:
                 bar.finish()
+                logger.error(f"Error rendering template {i}")
                 found = True
                 logger.error("Error while trying to found!!!")
                 continue
