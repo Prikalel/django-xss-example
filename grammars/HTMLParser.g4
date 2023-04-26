@@ -146,7 +146,7 @@ djangoAutoescape
     ;
 
 djangoFilter
-    : {self.is_force_escaped += 1} DJ_OPEN DJ_FILTER_KEYWORD DJ_FORCE_ESCAPE_FILTER (DJ_FILTER_SIGN filter)* DJ_CLOSE htmlContent DJ_OPEN DJ_END_FILTER DJ_CLOSE {self.is_force_escaped -= 1}
+    : {self.is_force_escaped += 1} DJ_OPEN DJ_FILTER_KEYWORD escapingFilter (DJ_FILTER_SIGN filter)* DJ_CLOSE htmlContent DJ_OPEN DJ_END_FILTER DJ_CLOSE {self.is_force_escaped -= 1}
     | DJ_OPEN DJ_FILTER_KEYWORD filter (DJ_FILTER_SIGN filter)* DJ_CLOSE htmlContent DJ_OPEN DJ_END_FILTER DJ_CLOSE
     ;
 
@@ -194,14 +194,14 @@ djangoFirstOfVariable
 
 djangoEscapedVariable
     : {self.is_force_escaped > 0}? DJ_VALUE
-    | DJ_VALUE DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER
+    | DJ_VALUE DJ_FILTER_SIGN escapingFilter
     | {self._hasAtLeastOneDefinedVariable(check_for_with_variables=self.is_force_escaped > 0)}? {self.allow_with_variable_using = self.is_force_escaped > 0} djangoDefinedVariable {self.allow_with_variable_using = True}
-    | {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER
+    | {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable DJ_FILTER_SIGN escapingFilter
     ;
 
 djangoVariable
-    : {self.is_force_escaped == 0}? DJ_VARIABLE_OPEN djangoDefinedVariable DJ_FILTER_SIGN DJ_FORCE_ESCAPE_FILTER (DJ_FILTER_SIGN filter)* DJ_VARIABLE_CLOSE
-    | {self.is_force_escaped > 0}? DJ_VARIABLE_OPEN djangoDefinedVariable (DJ_FILTER_SIGN (filter|DJ_FORCE_ESCAPE_FILTER))* DJ_VARIABLE_CLOSE
+    : {self.is_force_escaped == 0}? DJ_VARIABLE_OPEN djangoDefinedVariable DJ_FILTER_SIGN escapingFilter (DJ_FILTER_SIGN filter)* DJ_VARIABLE_CLOSE
+    | {self.is_force_escaped > 0}? DJ_VARIABLE_OPEN djangoDefinedVariable (DJ_FILTER_SIGN (filter|escapingFilter))* DJ_VARIABLE_CLOSE
     ;
 
 djangoDefinedVariable
@@ -311,6 +311,7 @@ filter
     | DJ_RJUST_FILTER
     | DJ_MAKE_LIST_FILTER DJ_FILTER_SIGN listToSingleFilter
     | DJ_LENGTH_FILTER DJ_FILTER_SIGN DJ_STRINGFORMAT_INT_TO_STRING_FILTER
+    | DJ_ESCAPEJS_FILTER
     ;
 
 listToSingleFilter
@@ -319,6 +320,12 @@ listToSingleFilter
     | DJ_RANDOM_FILTER_FROM_LIST
     | DJ_JOIN_FILTER_FROM_LIST
     | DJ_LENGTH_FILTER DJ_FILTER_SIGN DJ_STRINGFORMAT_INT_TO_STRING_FILTER
+    ;
+
+escapingFilter
+    : DJ_FORCE_ESCAPE_FILTER
+    | DJ_ESCAPE_FILTER
+    | DJ_SCRIPTAGS_FILTER
     ;
 
 htmlAttributeName

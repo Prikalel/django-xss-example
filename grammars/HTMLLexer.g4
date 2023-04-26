@@ -60,12 +60,20 @@ DJ_FORCE_ESCAPE_FILTER
     : 'force_escape'
     ;
 
+DJ_ESCAPE_FILTER
+    : 'escape'
+    ;
+
 DJ_LOWER_FILTER
     : 'lower'
     ;
 
 DJ_UPPER_FILTER
     : 'upper'
+    ;
+
+DJ_ESCAPEJS_FILTER
+    : 'escapejs'
     ;
 
 DJ_ADDSLASHES_FILTER
