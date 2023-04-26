@@ -90,8 +90,8 @@ django
     | {self._hasAtLeastOneContextListVariableDefined()}? djangoForLoop
     | {self._canUseCycle()}? djangoCycle
     | {self._hasAtLeastOneDefinedVariable()}? djangoVariable
-  //  | {not self.is_in_comment_section}? djangoIncludeTag {self._startOfCommentedBlock()} djangoCommentedIncludingTemplate {self._endOfCommentedBlock()}
-  //  | {not self.is_in_comment_section}? djangoOverriddenBlock {self._startOfCommentedBlock()} djangoCommentedOverridingBlock {self._endOfCommentedBlock()}
+    | {not self.is_in_comment_section}? djangoIncludeTag {self._startOfCommentedBlock()} djangoCommentedIncludingTemplate {self._endOfCommentedBlock()}
+    | {not self.is_in_comment_section}? djangoOverriddenBlock {self._startOfCommentedBlock()} djangoCommentedOverridingBlock {self._endOfCommentedBlock()}
     ;
 
 djangoDebug
