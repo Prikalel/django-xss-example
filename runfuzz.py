@@ -83,7 +83,7 @@ def check_test(total_tests: int, num: int, d: Driver) -> bool:
 def run():
     d = Driver()
     g = Generator(generator='grammars.fuzzer.HTMLCustomGenerator.HTMLCustomGenerator', rule='htmlDocument', out_format='/home/alex/Документы/django-example/polls/templates/polls/test_%d.html',
-                  model='grammarinator.runtime.DefaultModel', max_depth=60, cleanup=False)
+                  model='grammarinator.runtime.DefaultModel', max_depth=60, cleanup=False) # TODO: , weights=read_weights("grammars/fuzzer/weights-no-debug.json") <- to use constant weights.
     django_setup()
     num_of_tests: int = 20
     total_tests: int = 0
