@@ -206,10 +206,18 @@ djangoEscapedVariable
     | {self._hasAtLeastOneWithVariableDefined()}? djangoDefinedWithVariable DJ_FILTER_SIGN escapingFilter
     ;
 
+djangoVariableAnyFilterAndClose
+    : (DJ_FILTER_SIGN (filter|escapingFilter))* DJ_VARIABLE_CLOSE
+    ;
+
 djangoVariable
     : {self.is_force_escaped == 0}? DJ_VARIABLE_OPEN djangoDefinedVariable DJ_FILTER_SIGN escapingFilter (DJ_FILTER_SIGN filter)* DJ_VARIABLE_CLOSE
-    | {self.is_force_escaped > 0}? DJ_VARIABLE_OPEN djangoDefinedVariable (DJ_FILTER_SIGN (filter|escapingFilter))* DJ_VARIABLE_CLOSE
-    | {self.autoescape[-1] and self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
+    | {self.is_force_escaped > 0}? DJ_VARIABLE_OPEN djangoDefinedVariable djangoVariableAnyFilterAndClose
+    | DJ_VARIABLE_OPEN djangoDefinedVariableAutoescapeOverride djangoVariableAnyFilterAndClose
+    ;
+
+djangoDefinedVariableAutoescapeOverride
+    : {self.autoescape[-1] and self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable
     | {self.autoescape[-1] and self._hasAtLeastOneForLoopVariable()}? djangoDefinedLoopVariable
     | {self.autoescape[-1] and self._hasAtLeastOneContextListVariableDefined()}? djangoDefinedContextListVariable DJ_FILTER_SIGN listToSingleFilter
     | {not self.autoescape[-1] and self._hasAtLeastOneContextStringVariableDefined()}? djangoDefinedContextVariable DJ_FILTER_SIGN DJ_ESCAPE_FILTER
