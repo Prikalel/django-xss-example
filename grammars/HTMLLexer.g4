@@ -285,7 +285,7 @@ DJ_UNDEFINED_LIST_VARIABLE
     ;
 
 DJ_VALUE
-    : '"123"' | '"<script>alert(\'XSS\');</script>"'
+    : '"123"' | '"<script>alert(\\\'XSS\\\');</script>"'
     ;
 
 DJ_INCLUDE_FILENAME

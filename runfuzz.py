@@ -1,3 +1,4 @@
+import sys
 import django
 import os
 import logging
@@ -12,6 +13,11 @@ from djangocontext import ContextLoader
 from progress.bar import IncrementalBar
 from grammarinator.generate import *
 from mylogger import LoggersSetup
+from tracing import tracefunc
+import globals
+import plotly.express as px
+import pandas as pd
+from statistics import mean
 
 logger = logging.getLogger("runfuzz")
 
@@ -50,18 +56,25 @@ class Fuzzer:
         bar.finish()
         return True
 
-    def check_tests(self) -> bool:
+    def check_tests(self) -> float:  #return: average coverage in lines.
+        coverages = []
         bar = IncrementalBar('Check', max=self.num)
         for i in range(self.total_tests, self.total_tests + self.num):
             template_filepath: str = f"./polls/templates/polls/test_{i}.html"
             output_rendered_name = f"./polls/templates/polls/rendered_test_{i}.html"
+            globals.coverage = set()
             if not self.found:
                 ctx = ContextLoader(template_filepath)
                 ctx.create_and_modify_files_if_need()
+                preloaded_context: dict = ctx.get_context()
+                sys.settrace ( tracefunc )
                 t: Template = get_template(f'test_{i}.html')
                 try:
-                    rendered = t.render(ctx.get_context())
+                    rendered = t.render(preloaded_context)
+                    sys.settrace ( None )
+                    coverages.append(len(globals.coverage))
                 except:
+                    sys.settrace ( None )
                     bar.finish()
                     logger.error(f"Error rendering template {i}")
                     self.found = True
@@ -82,21 +95,32 @@ class Fuzzer:
 
         if not self.found:
             bar.finish()
-        return self.found
+
+        print(coverages)
+        return mean(coverages)
 
     def run(self):
+        x = []
+        y = []
         while not self.found:
             logger.info("Creating new pool...")
             self.generate_tests()
-            self.check_tests()
+            x.append(x[-1] + self.num if len(x) > 0 else self.num)
+            y.append(self.check_tests())
             self.total_tests += self.num
             if not self.found:
                 logger.info(f"Not found. Have run {self.total_tests} tests...")
-        
+        df = pd.DataFrame(dict(
+            x = x,
+            y = y
+        ))
+        fig = px.line(df, x="x", y="y", title="Coverage") 
+        fig.show()
         logger.info(f"Found in less than {self.total_tests} tests!")
 
 
 if __name__ == "__main__":
+    globals.init()
     LoggersSetup.setup_all()
     PrepareActions.do_all()
     Fuzzer().run()
